@@ -1,0 +1,49 @@
+﻿{ 
+module Lexer
+
+// Opens methods related to fslex.exe
+open Microsoft.FSharp.Text.Lexing
+open System
+
+let lexeme = LexBuffer.LexemeString
+
+let newline (lexbuf: LexBuffer<_>) = 
+  lexbuf.StartPos <- lexbuf.StartPos.NextLine
+
+exception SyntaxError of string
+}
+
+
+// Regular expressions
+let whitespace = [' ' '\t' ]
+let newline = ('\n' | '\r' '\n')
+let id = [ 'a'-'z' 'A'-'Z' '_' '0'-'9' ]
+let int = ['-' '+']? ['0'-'9']+
+  
+rule tokenstream = 
+parse
+  | "{"           { Parser.LCB }
+  | "}"           { Parser.RCB }
+  | "->"          { Parser.ARROW }
+  | ";"           { Parser.SEPERATOR }
+  | "echo"        { Parser.ECHO }
+  | "("           { Parser.LPAR }
+  | ")"           { Parser.RPAR }
+  | "="           { Parser.EQUALS }
+  | "let"         { Parser.LET }
+  | "true"        { Parser.BOOL (true) }
+  | "false"       { Parser.BOOL (false) }
+  | int           { Parser.INT (int (lexeme lexbuf)) }
+  | '"'           { read_string "" false lexbuf } 
+  | id+           { Parser.ID (lexeme lexbuf) }
+  | whitespace    { tokenstream lexbuf }
+  | newline       { newline lexbuf; tokenstream lexbuf }
+  | _             { raise (Exception (sprintf "SyntaxError: Unexpected char: '%s' Line: %d Column: %d" (lexeme lexbuf) (lexbuf.StartPos.Line+1) lexbuf.StartPos.Column)) }
+  | eof           { Parser.EOF }
+
+and read_string str ignorequote =
+parse
+  | '"'           { if ignorequote then (read_string (str+"\\\"") false lexbuf) else Parser.STRING (str) }
+  | '\\'          { read_string str true lexbuf }
+  | [^ '"' '\\']+ { read_string (str+(lexeme lexbuf)) false lexbuf }
+  | eof           { raise (Exception ("String is not terminated")) }

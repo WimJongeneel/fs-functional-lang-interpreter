@@ -1,0 +1,55 @@
+%{
+open AST
+
+%}
+
+// The start token becomes a parser function in the compiled code:
+%start start
+
+// Regular tokens
+%token LET SEPERATOR ECHO LCB RCB
+%token ARROW LPAR RPAR
+%token EQUALS NOT BIGGER SMALLER
+%token < string > ID
+%token < string > STRING
+%token < int32 > INT
+%token < bool > BOOL
+%token EOF
+
+// This is the type of the data produced by a successful reduction of the 'start'
+// symbol:
+%type < Expression list > start
+
+%%
+
+// These are the rules of the grammar along with the F# code of the
+// actions executed as rules are reduced.
+start: program EOF { $1 }
+
+program:
+  | expression                                        { [$1] }
+  | expression program                                { $1 :: $2 }
+
+atomic:
+  | INT                                               { Int $1 }
+  | BOOL                                              { Bool $1 }
+
+expression:
+  | LET ID EQUALS expression1                         { Write ($2, $4) }
+  | ECHO expression1                                  { Echo $2 }
+  | expression1                                       { $1 }
+
+expression1:
+  | expression1 EQUALS EQUALS expression2             { Equals ($1, $4)}
+  | expression2                                       { $1 }
+
+expression2:
+  | atomic                                            { Value $1 }
+  | ID                                                { Read $1 }
+  | lambda                                            { $1 }
+  | expression1 LPAR expression1 RPAR                 { Apply ($1, $3) }
+  | LCB expression RCB                                { Nested $2 }
+
+lambda:
+  | ID ARROW LCB program RCB                          { Lambda ($1, $4)}
+  | ID ARROW expression                               { Lambda ($1, [$3])}
