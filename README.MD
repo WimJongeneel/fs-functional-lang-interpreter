@@ -35,6 +35,13 @@ let u = ()
 ```
 Type's don't implicit cast on runtime.
 
+## Operators
+The language supports the following math operators, in order of predence:
+* times: `*`
+* divide: `/`
+* add: `+`
+* min: `-`
+
 ## Echo
 The `echo` keyword lets you print any variable.
 ```

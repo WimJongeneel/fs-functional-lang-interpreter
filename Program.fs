@@ -7,13 +7,7 @@ open System
 let main argv =
 
   let test = """
-  let compose = f -> g -> a -> g(f(a))
-let comp1 = compose(x -> 2)
-let comp2 = comp1(x -> {
-  echo x
-  2
-})
-comp2(1)
+  echo 1 + 1 * 2 - 1
   """
 
   let lexbuf = LexBuffer<char>.FromString test

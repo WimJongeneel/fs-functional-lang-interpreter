@@ -16,6 +16,12 @@ and Expression =
 | Nested of Expression
 | Echo of Expression
 | Equals of left: Expression * rigth: Expression
+| NotEquals of left: Expression * rigth: Expression
+| Plus of left: Expression * rigth: Expression
+| Min of left: Expression * rigth: Expression
+| Times of left: Expression * rigth: Expression
+| Divide of left: Expression * rigth: Expression
+ 
 
 and Memory = List<Map<string, MemoryValue>>
 
@@ -45,13 +51,59 @@ let rec evalExpression (mem: Memory) (expr: Expression) : Memory * MemoryValue =
   | Echo e          -> let (_, v) = evalExpression mem e
                        printf "%A" v
                        mem, Unit ()
-  | Equals (l,r)    -> let m1, l1 = evalExpression mem l
-                       let m2, r1 = evalExpression m1 r
-                       match (l1, r1) with
-                       | (Int i1, Int i2)     -> m2, Bool (i1 = i2)
-                       | (Bool b1, Bool b2 )  -> m2, Bool (b1 = b2)
-                       | (Unit _, Unit _)         -> m2, Bool true
-                       | _ -> Exception "Type error with ==" |> raise
+  | Equals (l,r)    -> evalEquals mem l r
+  | NotEquals (l,r) -> evalNotEquals mem l r
+  | Plus (l, r)     -> evalPlus mem l r
+  | Min (l, r)      -> evalMin mem l r
+  | Times (l, r)    -> evalTimes mem l r
+  | Divide (l, r)   -> evalDivide mem l r
+
+
+and evalEquals (mem: Memory) (left: Expression) (rigth: Expression) = 
+  let m1, l1 = evalExpression mem left
+  let m2, r1 = evalExpression m1 rigth
+  match (l1, r1) with
+  | (Int i1, Int i2)     -> m2, Bool (i1 = i2)
+  | (Bool b1, Bool b2 )  -> m2, Bool (b1 = b2)
+  | (Unit _, Unit _)     -> m2, Bool true
+  | _                    -> Exception "Type error with ==" |> raise
+
+and evalNotEquals (mem: Memory) (left: Expression) (rigth: Expression) = 
+  let m1, l1 = evalExpression mem left
+  let m2, r1 = evalExpression m1 rigth
+  match (l1, r1) with
+  | (Int i1, Int i2)     -> m2, Bool (i1 <> i2)
+  | (Bool b1, Bool b2 )  -> m2, Bool (b1 <> b2)
+  | (Unit _, Unit _)     -> m2, Bool false
+  | _                    -> Exception "Type error with !=" |> raise
+
+and evalPlus (mem: Memory) (left: Expression) (rigth: Expression) = 
+  let m1, l1 = evalExpression mem left
+  let m2, r1 = evalExpression m1 rigth
+  match (l1, r1) with
+  | (Int i1, Int i2)     -> m2, Int (i1 + i2)
+  | _                    -> Exception "Type error with +" |> raise
+
+and evalMin (mem: Memory) (left: Expression) (rigth: Expression) = 
+  let m1, l1 = evalExpression mem left
+  let m2, r1 = evalExpression m1 rigth
+  match (l1, r1) with
+  | (Int i1, Int i2)     -> m2, Int (i1 - i2)
+  | _                    -> Exception "Type error with -" |> raise
+
+and evalTimes (mem: Memory) (left: Expression) (rigth: Expression) = 
+  let m1, l1 = evalExpression mem left
+  let m2, r1 = evalExpression m1 rigth
+  match (l1, r1) with
+  | (Int i1, Int i2)     -> m2, Int (i1 * i2)
+  | _                    -> Exception "Type error with *" |> raise
+
+and evalDivide (mem: Memory) (left: Expression) (rigth: Expression) = 
+  let m1, l1 = evalExpression mem left
+  let m2, r1 = evalExpression m1 rigth
+  match (l1, r1) with
+  | (Int i1, Int i2)     -> m2, Int (i1 / i2)
+  | _                    -> Exception "Type error with /" |> raise
 
 and applyLamda (scope: Memory) (exprs: Expression list) (param: MemoryValue) (paramAlias: string )=
   let mutable res = Unit ()
@@ -62,7 +114,7 @@ and applyLamda (scope: Memory) (exprs: Expression list) (param: MemoryValue) (pa
                     res <- v;)) exprs |> ignore
   res
 
-and evalExpressions (exprs: Expression list) = 
+let evalExpressions (exprs: Expression list) = 
   let mutable mem: Memory = [Map.empty]
   List.map (fun e -> (let m1, _ = evalExpression mem e
                     mem <- m1;)) exprs |> ignore
