@@ -21,6 +21,7 @@ and Expression =
 | Min of left: Expression * rigth: Expression
 | Times of left: Expression * rigth: Expression
 | Divide of left: Expression * rigth: Expression
+| Condition of con: Expression * _then: Expression * _else: Expression
  
 
 and Memory = List<Map<string, MemoryValue>>
@@ -35,28 +36,33 @@ let writeMemory (mem: Memory) (id: string) (v: MemoryValue) =
 
 let rec evalExpression (mem: Memory) (expr: Expression) : Memory * MemoryValue = 
   match expr with
-  | Value v         -> mem, v
-  | Read id         -> mem, readMemory mem id
-  | Write (id, e)   -> let m1, v1 = evalExpression mem e
-                       let m2 = writeMemory m1 id v1
-                       m2, Unit ()
-  | Lambda (p, es)  -> mem, LambdaExpr (mem, es, p)
-  | Apply (e, p)    -> let (m1, l) = evalExpression mem e
-                       let (m2, p1) = evalExpression m1 p
-                       let res = match l with
-                                  | LambdaExpr (s, es, p) -> applyLamda s es p1 p
-                                  | _ -> Exception "can not apply" |> raise
-                       m1, res
-  | Nested e        -> evalExpression mem e
-  | Echo e          -> let (_, v) = evalExpression mem e
-                       printf "%A" v
-                       mem, Unit ()
-  | Equals (l,r)    -> evalEquals mem l r
-  | NotEquals (l,r) -> evalNotEquals mem l r
-  | Plus (l, r)     -> evalPlus mem l r
-  | Min (l, r)      -> evalMin mem l r
-  | Times (l, r)    -> evalTimes mem l r
-  | Divide (l, r)   -> evalDivide mem l r
+  | Value v                 -> mem, v
+  | Read id                 -> mem, readMemory mem id
+  | Write (id, e)           -> let m1, v1 = evalExpression mem e
+                               let m2 = writeMemory m1 id v1
+                               m2, Unit ()
+  | Lambda (p, es)          -> mem, LambdaExpr (mem, es, p)
+  | Apply (e, p)            -> let (m1, l) = evalExpression mem e
+                               let (m2, p1) = evalExpression m1 p
+                               let res = match l with
+                                          | LambdaExpr (s, es, p) -> applyLamda s es p1 p
+                                          | _ -> Exception "can not apply" |> raise
+                               m1, res
+  | Nested e                -> evalExpression mem e
+  | Echo e                  -> let (_, v) = evalExpression mem e
+                               printf "%A" v
+                               mem, Unit ()
+  | Equals (l,r)            -> evalEquals mem l r
+  | NotEquals (l,r)         -> evalNotEquals mem l r
+  | Plus (l, r)             -> evalPlus mem l r
+  | Min (l, r)              -> evalMin mem l r
+  | Times (l, r)            -> evalTimes mem l r
+  | Divide (l, r)           -> evalDivide mem l r
+  | Condition (c, i, e)     -> let m1, will = evalExpression mem c
+                               match will with
+                                | Bool true -> evalExpression m1 i
+                                | Bool false -> evalExpression m1 e
+                                | _ -> Exception "Expected bool for if" |> raise
 
 
 and evalEquals (mem: Memory) (left: Expression) (rigth: Expression) = 

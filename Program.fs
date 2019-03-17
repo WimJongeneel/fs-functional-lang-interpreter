@@ -7,7 +7,9 @@ open System
 let main argv =
 
   let test = """
-  echo 1 + 1 * 2 - 1
+  let f = n -> n == 1 ? 0 : n == 2 ? 10 : 20
+  let x = true ? 1 : 0
+  echo true ? 1 : 0
   """
 
   let lexbuf = LexBuffer<char>.FromString test

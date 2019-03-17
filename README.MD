@@ -42,6 +42,16 @@ The language supports the following math operators, in order of predence:
 * add: `+`
 * min: `-`
 
+## Conditional
+Controlflow is provided with the `conditional ? when-true : when-false`.
+```
+let boolToInt = b -> b ? 1 : 0
+```
+It is posible to put more conditionals in one of the branches.
+```
+let x = n -> n == 1 ? 10 : n == 2 ? 20 : 30
+```
+
 ## Echo
 The `echo` keyword lets you print any variable.
 ```
