@@ -33,6 +33,7 @@ parse
   | "let"         { Parser.LET }
   | "true"        { Parser.BOOL (true) }
   | "false"       { Parser.BOOL (false) }
+  | "()"          { Parser.UNIT }
   | int           { Parser.INT (int (lexeme lexbuf)) }
   | '"'           { read_string "" false lexbuf } 
   | id+           { Parser.ID (lexeme lexbuf) }

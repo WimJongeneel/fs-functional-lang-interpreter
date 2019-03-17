@@ -7,7 +7,7 @@ open AST
 %start start
 
 // Regular tokens
-%token LET SEPERATOR ECHO LCB RCB
+%token LET SEPERATOR ECHO LCB RCB UNIT
 %token ARROW LPAR RPAR
 %token EQUALS NOT BIGGER SMALLER
 %token < string > ID
@@ -33,6 +33,7 @@ program:
 atomic:
   | INT                                               { Int $1 }
   | BOOL                                              { Bool $1 }
+  | UNIT                                         { Unit () }
 
 expression:
   | LET ID EQUALS expression1                         { Write ($2, $4) }

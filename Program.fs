@@ -7,10 +7,13 @@ open System
 let main argv =
 
   let test = """
-  let eq = a -> b -> a == b
-  echo eq(1)(2)
-  let comp = f -> g -> a -> g(f(a))
-  comp(x -> {x == true})(x -> {echo x})(false)
+  let compose = f -> g -> a -> g(f(a))
+let comp1 = compose(x -> 2)
+let comp2 = comp1(x -> {
+  echo x
+  2
+})
+comp2(1)
   """
 
   let lexbuf = LexBuffer<char>.FromString test
