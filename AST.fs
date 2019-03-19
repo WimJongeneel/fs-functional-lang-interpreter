@@ -22,6 +22,8 @@ and Expression =
 | Times of left: Expression * rigth: Expression
 | Divide of left: Expression * rigth: Expression
 | Condition of con: Expression * _then: Expression * _else: Expression
+| And of left: Expression * rigth: Expression
+| Or of left: Expression * rigth: Expression
  
 
 and Memory = List<Map<string, MemoryValue>>
@@ -58,12 +60,32 @@ let rec evalExpression (mem: Memory) (expr: Expression) : Memory * MemoryValue =
   | Min (l, r)              -> evalMin mem l r
   | Times (l, r)            -> evalTimes mem l r
   | Divide (l, r)           -> evalDivide mem l r
+  | And (l, r)              -> evalAnd mem l r
+  | Or (l, r)               -> evalOr mem l r
   | Condition (c, i, e)     -> let m1, will = evalExpression mem c
                                match will with
                                 | Bool true -> evalExpression m1 i
                                 | Bool false -> evalExpression m1 e
                                 | _ -> Exception "Expected bool for if" |> raise
 
+and evalAnd (mem: Memory) (left: Expression) (rigth: Expression) = 
+  let m1, l1 = evalExpression mem left
+  match l1 with
+  | Bool false -> m1, Bool false
+  | Bool true -> let m2, r1 = evalExpression m1 rigth
+                 match r1 with
+                 | Bool _ -> m2, r1
+                 | _ -> Exception "Type error with &&" |> raise
+  | _ -> Exception "Type error with &&" |> raise
+
+and evalOr (mem: Memory) (left: Expression) (rigth: Expression) = 
+  let m1, l1 = evalExpression mem left
+  let m2, r1 = evalExpression m1 rigth
+  match (l1, r1) with
+  | (Bool true, Bool _) -> m2, Bool true
+  | (Bool _, Bool true) -> m2, Bool true
+  | (Bool false, Bool false) -> m2, Bool false
+  | _ -> Exception "Type error with ||" |> raise
 
 and evalEquals (mem: Memory) (left: Expression) (rigth: Expression) = 
   let m1, l1 = evalExpression mem left
