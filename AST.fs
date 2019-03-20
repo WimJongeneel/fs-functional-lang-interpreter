@@ -1,11 +1,13 @@
 module AST 
 open System
+open System.Linq.Expressions
 
 type MemoryValue =
 | Int of int
 | Bool of bool
 | LambdaExpr of scope: Memory * exprs: Expression list * param: string
 | Unit of unit
+| List of MemoryValue list
 
 and Expression = 
 | Value of MemoryValue
@@ -24,7 +26,8 @@ and Expression =
 | Condition of con: Expression * _then: Expression * _else: Expression
 | And of left: Expression * rigth: Expression
 | Or of left: Expression * rigth: Expression
- 
+| ListInit of Expression list
+| ListGet of list: Expression * index: Expression
 
 and Memory = List<Map<string, MemoryValue>>
 
@@ -67,6 +70,13 @@ let rec evalExpression (mem: Memory) (expr: Expression) : Memory * MemoryValue =
                                 | Bool true -> evalExpression m1 i
                                 | Bool false -> evalExpression m1 e
                                 | _ -> Exception "Expected bool for if" |> raise
+  | ListInit (l)            -> let list = List.map (evalExpression mem >> snd) l
+                               (mem, List list)
+  | ListGet (e, i)          -> let m1, list = evalExpression mem e
+                               let m2, index = evalExpression m1 i
+                               match (list, index) with
+                               | (List l, Int i)        -> m1, l.[i]
+                               | _                      -> Exception "can not index the value" |> raise
 
 and evalAnd (mem: Memory) (left: Expression) (rigth: Expression) = 
   let m1, l1 = evalExpression mem left

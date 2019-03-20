@@ -35,6 +35,18 @@ let u = ()
 ```
 Type's don't implicit cast on runtime.
 
+## Lists
+Collections are implemented using lists. They are constructed with the `[` and `]`:
+```
+let list = [1, 2, 3, 4]
+```
+Items are accessed with `/[*]`:
+```
+let list = [1,2,3]
+echo list
+echo list.[1]
+```
+
 ## Operators
 The language supports the following math operators, in order of predence:
 * times: `*`

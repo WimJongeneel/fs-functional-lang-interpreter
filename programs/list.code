@@ -1,0 +1,3 @@
+let list = [1,2,3]
+echo list
+echo list.[1]
