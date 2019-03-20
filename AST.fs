@@ -1,6 +1,5 @@
 module AST 
 open System
-open System.Linq.Expressions
 
 type MemoryValue =
 | Int of int
@@ -8,6 +7,7 @@ type MemoryValue =
 | LambdaExpr of scope: Memory * exprs: Expression list * param: string
 | Unit of unit
 | List of MemoryValue list
+| Object of (string * MemoryValue) array
 
 and Expression = 
 | Value of MemoryValue
@@ -28,6 +28,9 @@ and Expression =
 | Or of left: Expression * rigth: Expression
 | ListInit of Expression list
 | ListGet of list: Expression * index: Expression
+| ObjectInit of (string * MemoryValue) array
+| ObjectGet of obj: Expression * key: string
+| ObjectCopyWith of obj: Expression * key: string * newValue: (string * Expression)
 
 and Memory = List<Map<string, MemoryValue>>
 

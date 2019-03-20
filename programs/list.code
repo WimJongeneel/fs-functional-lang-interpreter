@@ -1,3 +1,4 @@
-let list = [1,2,3]
-echo list
-echo list.[1]
+let list = [x -> [[x], [x, x], x]]
+let fst = x -> x.[0]
+let snd = x -> x.[1]
+echo list.[0](1).[1].[0]
