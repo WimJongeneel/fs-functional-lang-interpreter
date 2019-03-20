@@ -1,22 +1,21 @@
 ﻿// Learn more about F# at http://fsharp.org
 open Microsoft.FSharp.Text.Lexing
 open AST
-open System
+open System.IO
 
 [<EntryPoint>]
 let main argv =
 
+  let code = File.ReadAllText argv.[0]
+
   let test = """
   let f = n -> n == 1 ? 0 : n == 2 ? 10 : 20
-  let x = true ? 1 : 0
+  echo f(3) - f(2)
   echo true ? 1 : 0
   """
 
-  let lexbuf = LexBuffer<char>.FromString test
+  let lexbuf = LexBuffer<char>.FromString code
   let ast: Expression list = Parser.start Lexer.tokenstream lexbuf
-
-  printf "%A \n\n" ast
-
   evalExpressions ast
 
 

@@ -3,3 +3,4 @@ bin
 Lexer.fs
 Parser.fs
 Parser.fsi
+out

@@ -52,7 +52,7 @@ let rec evalExpression (mem: Memory) (expr: Expression) : Memory * MemoryValue =
                                m1, res
   | Nested e                -> evalExpression mem e
   | Echo e                  -> let (_, v) = evalExpression mem e
-                               printf "%A" v
+                               printf "%A\n" v
                                mem, Unit ()
   | Equals (l,r)            -> evalEquals mem l r
   | NotEquals (l,r)         -> evalNotEquals mem l r

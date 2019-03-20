@@ -1,0 +1,18 @@
+#!/bin/bash
+file=""
+
+if [  $1 == "-f" ]; then
+  dotnet restore > /dev/null
+  dotnet publish -c Production -o out > /dev/null
+  file=$2
+else
+  file=$1
+fi
+
+if [ -f out/querylang.dll ]; then
+  dotnet out/querylang.dll $file
+else
+  dotnet restore > /dev/null
+  dotnet publish -c Production -o out > /dev/null
+  dotnet out/querylang.dll $file
+fi
