@@ -47,6 +47,27 @@ echo list
 echo list.[1]
 ```
 
+## Records
+Records store key-value pairs. They are constructed as follows:
+```
+let r = {
+  x: 1,
+  xx: 2
+}
+```
+Accessing properties happens with the `.`:
+```
+echo r.x
+```
+New records can be based on existing records by using `with`:
+```
+let r = {
+  x: 1
+}
+let r2 = { r with xx: 2 }
+echo r2.x
+```
+
 ## Operators
 The language supports the following math operators, in order of predence:
 * times: `*`
