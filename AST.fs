@@ -6,7 +6,7 @@ type MemoryValue =
 | Bool of bool
 | LambdaExpr of scope: Memory * exprs: Expression list * param: string
 | Unit of unit
-| List of MemoryValue list
+| Array of MemoryValue []
 | Object of Map<string, MemoryValue>
 
 and Expression = 
@@ -26,8 +26,8 @@ and Expression =
 | Condition of con: Expression * _then: Expression * _else: Expression
 | And of left: Expression * rigth: Expression
 | Or of left: Expression * rigth: Expression
-| ListInit of Expression list
-| ListGet of list: Expression * index: Expression
+| ArrayInit of Expression list
+| ArrayGet of list: Expression * index: Expression
 | ObjectInit of (string * Expression) list
 | ObjectGet of obj: Expression * key: string
 | ObjectCopyWith of obj: Expression * newValue: (string * Expression)
@@ -73,12 +73,12 @@ let rec evalExpression (mem: Memory) (expr: Expression) : Memory * MemoryValue =
                                 | Bool true -> evalExpression m1 i
                                 | Bool false -> evalExpression m1 e
                                 | _ -> Exception "Expected bool for if" |> raise
-  | ListInit (l)            -> let list = List.map (evalExpression mem >> snd) l
-                               (mem, List list)
-  | ListGet (e, i)          -> let m1, list = evalExpression mem e
+  | ArrayInit (l)           -> let list = List.map (evalExpression mem >> snd) l
+                               (mem, Array.ofList list |> Array)
+  | ArrayGet (e, i)         -> let m1, list = evalExpression mem e
                                let m2, index = evalExpression m1 i
                                match (list, index) with
-                               | (List l, Int i)        -> m1, l.[i]
+                               | (Array l, Int i)       -> m1, l.[i]
                                | _                      -> Exception "can not index the value" |> raise
   | ObjectInit r            -> mem, Map.ofList r |> Map.map (fun k e -> evalExpression mem e |> snd) |>  Object
   | ObjectGet (o, k)        -> let m1, obj = evalExpression mem o

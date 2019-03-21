@@ -35,16 +35,16 @@ let u = ()
 ```
 Type's don't implicit cast on runtime.
 
-## Lists
-Collections are implemented using lists. They are constructed with the `[` and `]`:
+## Arrays
+Collections are implemented using arrays. They are constructed with the `[` and `]`:
 ```
-let list = [1, 2, 3, 4]
+let arr = [1, 2, 3, 4]
 ```
 Items are accessed with `/[*]`:
 ```
-let list = [1,2,3]
-echo list
-echo list.[1]
+let arr = [1,2,3]
+echo arr
+echo arr.[1]
 ```
 
 ## Records
