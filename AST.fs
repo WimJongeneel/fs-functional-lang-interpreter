@@ -28,7 +28,7 @@ and Expression =
 | Or of left: Expression * rigth: Expression
 | ListInit of Expression list
 | ListGet of list: Expression * index: Expression
-| ObjectInit of (string * MemoryValue) array
+| ObjectInit of (string * Expression) list
 | ObjectGet of obj: Expression * key: string
 | ObjectCopyWith of obj: Expression * newValue: (string * Expression)
 
@@ -80,7 +80,7 @@ let rec evalExpression (mem: Memory) (expr: Expression) : Memory * MemoryValue =
                                match (list, index) with
                                | (List l, Int i)        -> m1, l.[i]
                                | _                      -> Exception "can not index the value" |> raise
-  | ObjectInit r            -> mem, Map.ofArray r |> Object
+  | ObjectInit r            -> mem, Map.ofList r |> Map.map (fun k e -> evalExpression mem e |> snd) |>  Object
   | ObjectGet (o, k)        -> let m1, obj = evalExpression mem o
                                match obj with
                                | Object r -> m1, r.[k]
