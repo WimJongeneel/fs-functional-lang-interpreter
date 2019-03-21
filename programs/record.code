@@ -1,0 +1,12 @@
+let r = x -> {{
+  x: x,
+  xx: x + x,
+  xxx: {
+    q: 3,
+    qq: 3
+  }
+}}
+
+let r2 = { r(1) with x: 9}
+
+echo r2

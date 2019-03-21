@@ -1,6 +1,5 @@
 module AST 
 open System
-open System.Linq.Expressions
 
 type MemoryValue =
 | Int of int
@@ -8,6 +7,7 @@ type MemoryValue =
 | LambdaExpr of scope: Memory * exprs: Expression list * param: string
 | Unit of unit
 | List of MemoryValue list
+| Object of Map<string, MemoryValue>
 
 and Expression = 
 | Value of MemoryValue
@@ -28,6 +28,9 @@ and Expression =
 | Or of left: Expression * rigth: Expression
 | ListInit of Expression list
 | ListGet of list: Expression * index: Expression
+| ObjectInit of (string * Expression) list
+| ObjectGet of obj: Expression * key: string
+| ObjectCopyWith of obj: Expression * newValue: (string * Expression)
 
 and Memory = List<Map<string, MemoryValue>>
 
@@ -77,6 +80,17 @@ let rec evalExpression (mem: Memory) (expr: Expression) : Memory * MemoryValue =
                                match (list, index) with
                                | (List l, Int i)        -> m1, l.[i]
                                | _                      -> Exception "can not index the value" |> raise
+  | ObjectInit r            -> mem, Map.ofList r |> Map.map (fun k e -> evalExpression mem e |> snd) |>  Object
+  | ObjectGet (o, k)        -> let m1, obj = evalExpression mem o
+                               match obj with
+                               | Object r -> m1, r.[k]
+                               | _                      -> Exception "can not index the value" |> raise
+  | ObjectCopyWith (o, nv)  -> let m1, obj = evalExpression mem o
+                               let m2, v = evalExpression m1 (snd nv)
+                               match obj with
+                               | Object r -> m2, Map.add (fst nv) v r |> Object
+                               | _                      -> Exception "can not index the value" |> raise
+
 
 and evalAnd (mem: Memory) (left: Expression) (rigth: Expression) = 
   let m1, l1 = evalExpression mem left
