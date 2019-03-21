@@ -1,4 +1,4 @@
-let node = i -> {
+let list_from = i -> {
   item: i,
   node: ()
 }
@@ -14,5 +14,5 @@ let rec list_map = f -> l -> {
 }
 
 
-let list = list_prepend(3)(list_prepend(2)(node(1)))
+let list = list_prepend(3)(list_prepend(2)(list_from(1)))
 echo list_map(x -> x + 9)(list)
