@@ -1,0 +1,18 @@
+let node = i -> {
+  item: i,
+  node: ()
+}
+
+let list_prepend = i -> l -> {
+  item: i,
+  node: l
+}
+
+let rec list_map = f -> l -> {
+  item: f(l.item),
+  node: l.node == () ? () : list_map(f)(l.node) 
+}
+
+
+let list = list_prepend(3)(list_prepend(2)(node(1)))
+echo list_map(x -> x + 9)(list)

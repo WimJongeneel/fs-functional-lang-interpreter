@@ -22,6 +22,7 @@ let int = ['-' '+']? ['0'-'9']+
   
 rule tokenstream = 
 parse
+  | "rec"         { Parser.REC }
   | "with"        { Parser.WITH }
   | ":"           { Parser.COLON }
   | "."           { Parser.DOT }
@@ -29,7 +30,6 @@ parse
   | "["           { Parser.LSQBR }
   | "]"           { Parser.RSQBR }
   | "?"           { Parser.QUESTION }
-  | ":"           { Parser.ELSE }
   | "!"           { Parser.NOT }
   | "+"           { Parser.PLUS }
   | "-"           { Parser.MIN }

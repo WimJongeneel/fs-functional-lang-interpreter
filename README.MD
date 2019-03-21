@@ -24,6 +24,13 @@ let comp2 = comp1(x -> {
 comp2(1)
 ```
 Every lambda does have it's own lexial scope.
+Recursion is supportted on named lambda's that are marked with `rec`:
+```
+let rec list_map = f -> l -> {
+  item: f(l.item),
+  node: l.node == () ? () : list_map(f)(l.node) 
+}
+```
 
 ## Variables
 The language supports ints and booleans and unit (outside lambda's). They are constructed as follows:
@@ -45,6 +52,7 @@ Items are accessed with `/[*]`:
 let arr = [1,2,3]
 echo arr
 echo arr.[1]
+echo list_map 
 ```
 
 ## Records

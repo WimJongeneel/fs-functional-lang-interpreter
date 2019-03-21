@@ -4,7 +4,7 @@ open System
 type MemoryValue =
 | Int of int
 | Bool of bool
-| LambdaExpr of scope: Memory * exprs: Expression list * param: string
+| LambdaExpr of scope: Memory * exprs: Expression list * param: string * _rec: string option
 | Unit of unit
 | Array of MemoryValue []
 | Object of Map<string, MemoryValue>
@@ -12,7 +12,7 @@ type MemoryValue =
 and Expression = 
 | Value of MemoryValue
 | Read of id: string
-| Write of id: string * expr: Expression
+| Write of id: string * expr: Expression * _rec: bool
 | Lambda of param: string * exprs: Expression list
 | Apply of func: Expression * param: Expression
 | Nested of Expression
@@ -46,14 +46,17 @@ let rec evalExpression (mem: Memory) (expr: Expression) : Memory * MemoryValue =
   match expr with
   | Value v                 -> mem, v
   | Read id                 -> mem, readMemory mem id
-  | Write (id, e)           -> let m1, v1 = evalExpression mem e
-                               let m2 = writeMemory m1 id v1
+  | Write (id, e, _rec)     -> let m1, v1 = evalExpression mem e
+                               let v2 = match (v1, _rec) with
+                                        | (LambdaExpr (s, e, p, r), true) -> LambdaExpr (s, e, p, Some id)
+                                        | _ -> v1
+                               let m2 = writeMemory m1 id v2
                                m2, Unit ()
-  | Lambda (p, es)          -> mem, LambdaExpr (mem, es, p)
+  | Lambda (p, es)          -> mem, LambdaExpr (mem, es, p, None)
   | Apply (e, p)            -> let (m1, l) = evalExpression mem e
                                let (m2, p1) = evalExpression m1 p
                                let res = match l with
-                                          | LambdaExpr (s, es, p) -> applyLamda s es p1 p
+                                          | LambdaExpr (s, es, p, r) -> applyLamda s es p1 p r
                                           | _ -> Exception "can not apply" |> raise
                                m1, res
   | Nested e                -> evalExpression mem e
@@ -118,7 +121,7 @@ and evalEquals (mem: Memory) (left: Expression) (rigth: Expression) =
   | (Int i1, Int i2)     -> m2, Bool (i1 = i2)
   | (Bool b1, Bool b2 )  -> m2, Bool (b1 = b2)
   | (Unit _, Unit _)     -> m2, Bool true
-  | _                    -> Exception "Type error with ==" |> raise
+  | _                    -> m2, Bool false
 
 and evalNotEquals (mem: Memory) (left: Expression) (rigth: Expression) = 
   let m1, l1 = evalExpression mem left
@@ -157,9 +160,10 @@ and evalDivide (mem: Memory) (left: Expression) (rigth: Expression) =
   | (Int i1, Int i2)     -> m2, Int (i1 / i2)
   | _                    -> Exception "Type error with /" |> raise
 
-and applyLamda (scope: Memory) (exprs: Expression list) (param: MemoryValue) (paramAlias: string )=
+and applyLamda (scope: Memory) (exprs: Expression list) (param: MemoryValue) (paramAlias: string ) (_rec: string option) =
   let mutable res = Unit ()
   let mutable mem = Map.empty :: scope
+  if _rec.IsSome then mem <- writeMemory mem _rec.Value <| LambdaExpr (scope, exprs, paramAlias, _rec)
   mem <- writeMemory mem paramAlias param
   List.map (fun e -> (let m1, v = evalExpression mem e
                     mem <- m1;
