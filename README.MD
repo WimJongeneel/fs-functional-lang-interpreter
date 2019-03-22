@@ -47,7 +47,7 @@ Collections are implemented using arrays. They are constructed with the `[` and 
 ```
 let arr = [1, 2, 3, 4]
 ```
-Items are accessed with `/[*]`:
+Items are accessed with `.[*]`:
 ```
 let arr = [1,2,3]
 echo arr

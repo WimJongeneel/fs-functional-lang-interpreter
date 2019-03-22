@@ -1,3 +1,2 @@
-let f = n -> n == 1 ? 0 : n == 2 ? 10 : 20
-echo f(3) - f(2)
-echo true ? 1 : 0
+let s = "test"
+echo s.[8]

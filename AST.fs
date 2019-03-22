@@ -2,6 +2,7 @@ module AST
 open System
 
 type MemoryValue =
+| String of string
 | Int of int
 | Bool of bool
 | LambdaExpr of scope: Memory * exprs: Expression list * param: string * _rec: string option
@@ -81,7 +82,8 @@ let rec evalExpression (mem: Memory) (expr: Expression) : Memory * MemoryValue =
   | ArrayGet (e, i)         -> let m1, list = evalExpression mem e
                                let m2, index = evalExpression m1 i
                                match (list, index) with
-                               | (Array l, Int i)       -> m1, l.[i]
+                               | (Array l, Int i)       -> m1, if i < l.Length then l.[i] else Unit ()
+                               | (String s, Int i)      -> m1, if i < s.Length then s.[i] |> string |> String else Unit ()
                                | _                      -> Exception "can not index the value" |> raise
   | ObjectInit r            -> mem, Map.ofList r |> Map.map (fun k e -> evalExpression mem e |> snd) |>  Object
   | ObjectGet (o, k)        -> let m1, obj = evalExpression mem o
@@ -118,25 +120,28 @@ and evalEquals (mem: Memory) (left: Expression) (rigth: Expression) =
   let m1, l1 = evalExpression mem left
   let m2, r1 = evalExpression m1 rigth
   match (l1, r1) with
-  | (Int i1, Int i2)     -> m2, Bool (i1 = i2)
-  | (Bool b1, Bool b2 )  -> m2, Bool (b1 = b2)
-  | (Unit _, Unit _)     -> m2, Bool true
-  | _                    -> m2, Bool false
+  | (Int i1, Int i2)         -> m2, Bool (i1 = i2)
+  | (Bool b1, Bool b2 )      -> m2, Bool (b1 = b2)
+  | (Unit _, Unit _)         -> m2, Bool true
+  | (String s1, String s2)   -> m2, Bool (s1 = s2)
+  | _                        -> m2, Bool false
 
 and evalNotEquals (mem: Memory) (left: Expression) (rigth: Expression) = 
   let m1, l1 = evalExpression mem left
   let m2, r1 = evalExpression m1 rigth
   match (l1, r1) with
-  | (Int i1, Int i2)     -> m2, Bool (i1 <> i2)
-  | (Bool b1, Bool b2 )  -> m2, Bool (b1 <> b2)
-  | (Unit _, Unit _)     -> m2, Bool false
-  | _                    -> Exception "Type error with !=" |> raise
+  | (Int i1, Int i2)         -> m2, Bool (i1 <> i2)
+  | (Bool b1, Bool b2 )      -> m2, Bool (b1 <> b2)
+  | (String s1, String s2)   -> m2, Bool (s1 <> s2)
+  | (Unit _, Unit _)         -> m2, Bool false
+  | _                        -> Exception "Type error with !=" |> raise
 
 and evalPlus (mem: Memory) (left: Expression) (rigth: Expression) = 
   let m1, l1 = evalExpression mem left
   let m2, r1 = evalExpression m1 rigth
   match (l1, r1) with
-  | (Int i1, Int i2)     -> m2, Int (i1 + i2)
+  | (Int i1, Int i2)        -> m2, Int (i1 + i2)
+  | (String s1, String s2)  -> m2, String (s1 + s2)
   | _                    -> Exception "Type error with +" |> raise
 
 and evalMin (mem: Memory) (left: Expression) (rigth: Expression) = 
