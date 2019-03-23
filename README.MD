@@ -1,100 +1,114 @@
 # Interpreter for a functional language
 
-## Lambda
-Lambda's are the main feature in this language. They are constructed with `->`. for example:
+* [REPL](#repl)
+* [Variables](#variables)
+  * [Primitives](#primitives)
+  * [Arrays](#arrays)
+  * [Records](#records)
+  * [Lambdas](#lambdas)
+* [Operators](#operators)
+  * [Math](#math)
+  * [Comparison](#comparison)
+* [Modules](#modules)
+* [Conditionals](#Conditionals)
+* [Echo](#echo)
+
+## REPL
+run the interperter with the `-i` flag to launchs the REPL. In here you can experiment with the langauge.
 ```
-let id = x -> x
-```
-A lambda can contain multiple expressions if you place them between `{` and `}`. The last expresion of the lambda is the return value.
-```
-let myfun = x -> {
-  let y = 2
-  echo x
-  x == y
-}
-```
-It is posible to pass lambda's as parameters and return them as values. This means partial application (or curring) is supported out of the box.
-```
-let compose = f -> g -> a -> g(f(a))
-let comp1 = compose(x -> 2)
-let comp2 = comp1(x -> {
-  echo x
-  2
-})
-comp2(1)
-```
-Every lambda does have it's own lexial scope.
-Recursion is supportted on named lambda's that are marked with `rec`:
-```
-let rec list_map = f -> l -> {
-  item: f(l.item),
-  node: l.node == () ? () : list_map(f)(l.node) 
-}
+-- REPL ready
+--
+-- commands:
+--   type ':mem' to inspect the runtimes memory
+--   type ':store [ID]' to store the last result in memory 
+--   type ':save [FILE]' to save your code in a file 
+--   type ':close' to close the session 
+--
+-- happy coding
 ```
 
 ## Variables
-The language supports ints and booleans and unit (outside lambda's). They are constructed as follows:
+Variables are created with the `let` keyword. For example:
 ```
-let int = 1
-let bool = false
-let bool1 = true
-let u = ()
+let x = `
 ```
-Type's don't implicit cast on runtime.
+The language has lexial scoping. 
 
-## Arrays
-Collections are implemented using arrays. They are constructed with the `[` and `]`:
+### Primitives
+The different types of primitives are: `Int`, `Bool` and `String`.
 ```
-let arr = [1, 2, 3, 4]
-```
-Items are accessed with `.[*]`:
-```
-let arr = [1,2,3]
-echo arr
-echo arr.[1]
-echo list_map 
+let n = 1
+let s = "string"
+let b = true
 ```
 
-## Records
-Records store key-value pairs. They are constructed as follows:
+### Arrays
+Arrays are created with the `[` and `]`. It is posible to mix types within an array.
+```
+let ar = [1,2,3]
+let mix = [1, true, "string"]
+```
+Items are accesed with the `.[INDEX]`.
+```
+let arr = [1,3]
+let x = arr.[1]
+``` 
+
+### Records
+Records are object witch store key-value pairs. The look as follows:
 ```
 let r = {
   x: 1,
-  xx: 2
+  xx: true,
+  xxx: "string"
 }
 ```
-Accessing properties happens with the `.`:
+Properties can be accesed with `.ID`:
 ```
-echo r.x
+r.xx
 ```
-New records can be based on existing records by using `with`:
+
+### Lambdas
+Lambdas are created with the `->`:
+let f = x -> x + 1
 ```
-let r = {
-  x: 1
+Lambdas can contain multiple expresion with a codeblock. The last expression is the return value.
+```
+let f1 = x -> {
+  echo x
+  x + 1
 }
-let r2 = { r with xx: 2 }
-echo r2.x
+```
+Recursion is supported with the `rec` keyword:
+let rec f = x -> f(1)
 ```
 
 ## Operators
-The language supports the following math operators, in order of predence:
-* times: `*`
-* divide: `/`
-* add: `+`
-* min: `-`
 
-## Conditional
-Controlflow is provided with the `conditional ? when-true : when-false`.
+### Math
+The math operators are, in order of predence:
+* `*`: `1 * 1`
+* `/`: `1 / 1`
+* `+`: `1 + 1`
+* `-`: `1 - 1`
+
+### Comparison
+the comparison operators are `==` and `!=`
+
+## Modules
+Modules of the standard lib are loaded with `open [NAME]`. The modules are:
+* List: list implementation in the language
+* Option: optoin monad implementation in the language
+
+## Conditionals
+Conditionals are supported with the `prediction ? when-true : when-false`.
 ```
-let boolToInt = b -> b ? 1 : 0
-```
-It is posible to put more conditionals in one of the branches.
-```
-let x = n -> n == 1 ? 10 : n == 2 ? 20 : 30
+let bool_to_int = b -> b ? 1 : 0
 ```
 
 ## Echo
-The `echo` keyword lets you print any variable.
+use `echo [EXPR]` to print the result of a expresion.
 ```
 echo 1
+echo 1 + 1
 ```

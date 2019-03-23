@@ -19,7 +19,7 @@ let printWelcome () =
   printf "-- REPL ready\n--\n"
   printf "-- commands:\n"
   printf "--   type ':mem' to inspect the runtimes memory\n"
-  printf "--   type ':store [ID]' to store the last result \n"
+  printf "--   type ':store [ID]' to store the last result in memory \n"
   printf "--   type ':save [FILE]' to save your code in a file \n"
   printf "--   type ':close' to close the session \n"
   printf "--\n-- happy coding\n"
