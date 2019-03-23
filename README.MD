@@ -70,6 +70,7 @@ r.xx
 
 ### Lambdas
 Lambdas are created with the `->`:
+```
 let f = x -> x + 1
 ```
 Lambdas can contain multiple expresion with a codeblock. The last expression is the return value.
@@ -80,6 +81,7 @@ let f1 = x -> {
 }
 ```
 Recursion is supported with the `rec` keyword:
+```
 let rec f = x -> f(1)
 ```
 
