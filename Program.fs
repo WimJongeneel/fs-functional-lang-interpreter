@@ -1,6 +1,7 @@
 ﻿// Learn more about F# at http://fsharp.org
 open Microsoft.FSharp.Text.Lexing
 open AST
+open Runtime
 open System.IO
 
 [<EntryPoint>]
