@@ -1,5 +1,6 @@
 module RuntimeFunctions
 
+open System.IO
 open AST
 
 let Functions: Map<string, Memory -> MemoryValue -> Memory * MemoryValue> = Map.ofArray [|
@@ -31,4 +32,20 @@ let Functions: Map<string, Memory -> MemoryValue -> Memory * MemoryValue> = Map.
                               | Object _      -> String "record"
                               | Bool _        -> String "bool"
                               | Unit _        -> String "unit")
+  ("file_read", fun mem p -> mem, match p with
+                                   | String s  -> File.ReadAllText s |> String
+                                   | _         -> Unit ())
+  ("file_write", fun mem p -> mem, match p with
+                                   | Array a  -> let path = match a.[0] with
+                                                            | String s -> s 
+                                                            | _ -> System.Exception "no path in file_write" |> raise
+                                                 let text = match a.[1] with
+                                                            | String s -> s 
+                                                            | _ -> System.Exception "no text in file_write" |> raise
+                                                 File.WriteAllText(path, text)
+                                                 Bool true
+                                   | _         -> Bool false)
+  ("file_exists", fun mem p -> mem, match p with
+                                    | String s  -> File.Exists(s) |> Bool
+                                    | _         -> Unit ())
 |]
