@@ -15,6 +15,7 @@
     </FsLex>
     <Compile Include="Parser.fs" />
     <Compile Include="Lexer.fs" />
+    <Compile Include="RuntimeFunctions.fs" />
     <Compile Include="Runtime.fs" />
     <Compile Include="InteractiveRuntime.fs" />
     <Compile Include="Program.fs" />

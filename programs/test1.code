@@ -1,7 +1,3 @@
-let s = "test"
-
-let rec sizeOfI = x -> i -> x.[i] == () ? i : sizeOfI(x)(i + 1)
-
-let sizeOf = c -> sizeOfI(c)(0)
-
-echo sizeOf(s)
+let x = read(())
+let i = int(x)
+echo i

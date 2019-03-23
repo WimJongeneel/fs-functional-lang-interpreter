@@ -4,24 +4,29 @@ open System
 open AST
 open System.IO
 open Microsoft.FSharp.Text.Lexing
+open RuntimeFunctions
 
 let rec evalExpression (mem: Memory) (expr: Expression) : Memory * MemoryValue = 
   match expr with
   | Value v                 -> mem, v
   | Read id                 -> mem, readMemory mem id
-  | Write (id, e, _rec)     -> let m1, v1 = evalExpression mem e
+  | Write (id, e, _rec)     -> if Functions.ContainsKey id then Exception <| id + " is a reserved keyword" |> raise else
+                               let m1, v1 = evalExpression mem e
                                let v2 = match (v1, _rec) with
                                         | (LambdaExpr (s, e, p, r), true) -> LambdaExpr (s, e, p, Some id)
                                         | _ -> v1
                                let m2 = writeMemory m1 id v2
                                m2, Unit ()
   | Lambda (p, es)          -> mem, LambdaExpr (mem, es, p, None)
-  | Apply (e, p)            -> let (m1, l) = evalExpression mem e
-                               let (m2, p1) = evalExpression m1 p
-                               let res = match l with
-                                          | LambdaExpr (s, es, p, r) -> applyLamda s es p1 p r
-                                          | _ -> Exception "can not apply" |> raise
-                               m1, res
+  | Apply (e, p)            -> match e with
+                               | Read i when Functions.ContainsKey i -> let (m1, p1) = evalExpression mem p
+                                                                        Functions.[i] mem p1
+                               | _ -> let (m1, l) = evalExpression mem e
+                                      let (m2, p1) = evalExpression m1 p
+                                      let res = match l with
+                                                | LambdaExpr (s, es, p, r) -> applyLamda s es p1 p r
+                                                | _ -> Exception "can not apply" |> raise
+                                      m2, res
   | Nested e                -> evalExpression mem e
   | Echo e                  -> let (_, v) = evalExpression mem e
                                printf "%A\n" v
