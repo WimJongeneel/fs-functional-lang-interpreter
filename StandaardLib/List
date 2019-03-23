@@ -13,5 +13,6 @@ let rec list_map = f -> l -> {
   node: l.node == () ? () : list_map(f)(l.node) 
 }
 
-let list = list_prepend(3)(list_prepend(2)(list_from(1)))
-echo list_map(x -> x + 9)(list)
+let rec list_count_i = i -> l -> l.node == () ? i : list_count_i(i + 1)(l.node)
+
+let list_count = l -> list_count_i(1)(l)

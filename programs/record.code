@@ -1,12 +1,4 @@
-let r = x -> {{
-  x: x,
-  xx: x + x,
-  xxx: {
-    q: 3,
-    qq: 3
-  }
-}}
+open List
 
-let r2 = { r(1) with x: 9}
-
-echo r2
+let l = list_prepend(1)(list_from(2))
+echo list_count(l)

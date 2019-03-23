@@ -33,6 +33,7 @@ and Expression =
 | ObjectInit of (string * Expression) list
 | ObjectGet of obj: Expression * key: string
 | ObjectCopyWith of obj: Expression * newValue: (string * Expression)
+| Open of string
 
 and Memory = List<Map<string, MemoryValue>>
 

@@ -2,6 +2,8 @@ module Runtime
 
 open System
 open AST
+open System.IO
+open Microsoft.FSharp.Text.Lexing
 
 let rec evalExpression (mem: Memory) (expr: Expression) : Memory * MemoryValue = 
   match expr with
@@ -55,7 +57,15 @@ let rec evalExpression (mem: Memory) (expr: Expression) : Memory * MemoryValue =
                                match obj with
                                | Object r -> m2, Map.add (fst nv) v r |> Object
                                | _                      -> Exception "can not index the value" |> raise
+  | Open s                  -> loadModule mem s
 
+and loadModule (mem: Memory) (name: string): Memory * MemoryValue =
+  let code = File.ReadAllText <| "./StandaardLib/" + name
+  let ast: Expression list = Parser.start Lexer.tokenstream <| LexBuffer<char>.FromString code
+  let mutable m1: Memory = mem
+  List.map (fun e -> (let m2, _ = evalExpression m1 e
+                    m1 <- m2;)) ast |> ignore
+  m1, Unit ()
 
 and evalAnd (mem: Memory) (left: Expression) (rigth: Expression) = 
   let m1, l1 = evalExpression mem left

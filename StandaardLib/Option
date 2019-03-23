@@ -4,6 +4,3 @@ let some = x -> { some: true, value: x}
 let option_map = f -> o -> o.some ? some(f(o.value)) : none
 let option_join = o -> o.some ? o.value : none
 let option_bind = f -> o -> option_join(option_map(f)(o))
-
-let x = some(2)
-echo option_bind(x -> some(x + 9))(x)

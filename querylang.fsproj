@@ -13,9 +13,9 @@
     <FsLex Include="./language/Lexer.fsl">
       <OtherFlags>--unicode</OtherFlags>
     </FsLex>
-    <Compile Include="Runtime.fs" />
     <Compile Include="Parser.fs" />
     <Compile Include="Lexer.fs" />
+    <Compile Include="Runtime.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
