@@ -30,7 +30,7 @@ run the interperter with the `-i` flag to launchs the REPL. In here you can expe
 ## Variables
 Variables are created with the `let` keyword. For example:
 ```
-let x = `
+let x = 1
 ```
 The language has lexial scoping. 
 
