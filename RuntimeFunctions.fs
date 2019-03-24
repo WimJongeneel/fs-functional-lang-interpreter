@@ -32,6 +32,14 @@ let Functions: Map<string, Memory -> MemoryValue -> Memory * MemoryValue> = Map.
                               | Object _      -> String "record"
                               | Bool _        -> String "bool"
                               | Unit _        -> String "unit")
+  ("has_key", fun mem p -> mem, match p with
+                                | Array a -> match (a.[0], a.[1]) with
+                                              | (Object r, String s) -> Map.containsKey s r |> Bool
+                                              | _                    -> Bool false
+                                | _       -> Bool false)
+  ("array_count", fun mem p -> mem, match p with
+                                    | Array a -> Int a.Length
+                                    | _ -> Unit ())
   ("file_read", fun mem p -> mem, match p with
                                    | String s  -> File.ReadAllText s |> String
                                    | _         -> Unit ())
@@ -47,5 +55,12 @@ let Functions: Map<string, Memory -> MemoryValue -> Memory * MemoryValue> = Map.
                                    | _         -> Bool false)
   ("file_exists", fun mem p -> mem, match p with
                                     | String s  -> File.Exists(s) |> Bool
+                                    | _         -> Unit ())
+  ("dir_exists", fun mem p -> mem, match p with
+                                    | String s  -> System.IO.Directory.Exists(s) |> Bool
+                                    | _         -> Unit ())
+  ("dir_create", fun mem p -> mem, match p with
+                                    | String s  -> System.IO.Directory.CreateDirectory(s) |> ignore
+                                                   Bool true
                                     | _         -> Unit ())
 |]
