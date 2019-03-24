@@ -16,3 +16,8 @@ let rec list_map = f -> l -> {
 let rec list_count_i = i -> l -> l.node == () ? i : list_count_i(i + 1)(l.node)
 
 let list_count = l -> list_count_i(1)(l)
+
+let rec list_filter = f -> l -> f(l.node) == true ? {
+  item: l.item,
+  node: l.node == () ? () : list_filter(f)(l.node)
+} : l.node == () ? () : list_filter(f)(l.node)
