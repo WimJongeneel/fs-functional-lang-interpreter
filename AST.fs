@@ -1,12 +1,13 @@
 module AST
 
 open System
+open System.Linq.Expressions
 
 type MemoryValue =
 | String of string
 | Int of int
 | Bool of bool
-| LambdaExpr of scope: Memory * exprs: Expression list * param: string * _rec: string option
+| LambdaExpr of scope: Memory<MemoryValue> * exprs: Expression list * param: string * _rec: string option
 | Unit of unit
 | Array of MemoryValue []
 | Object of Map<string, MemoryValue>
@@ -35,12 +36,12 @@ and Expression =
 | ObjectCopyWith of obj: Expression * newValue: (string * Expression)
 | Open of string
 
-and Memory = List<Map<string, MemoryValue>>
+and Memory<'m> = List<Map<string, 'm>>
 
-let readMemory (mem: Memory) (id: string) =
+let readMemory<'m> (mem: Memory<'m>) (id: string) =
   List.tryPick (fun scope -> if Map.containsKey id scope then scope.[id] |> Some else None) mem
   |> fun v -> if v.IsSome then v.Value else Exception <| "Variable not defined: " + id |> raise
 
-let writeMemory (mem: Memory) (id: string) (v: MemoryValue) =
+let writeMemory<'m> (mem: Memory<'m>) (id: string) (v: 'm) =
   let scope = mem.Head |> fun scope -> scope.Add (id, v)
   scope :: mem.Tail

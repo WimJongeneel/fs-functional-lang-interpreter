@@ -1,3 +1,5 @@
-let x = read(())
-let i = int(x)
-echo i
+let x = 2
+let y = x + 2
+echo y
+let z = x * y
+echo z
