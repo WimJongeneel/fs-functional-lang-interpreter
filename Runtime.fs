@@ -11,7 +11,7 @@ let rec evalExpression (mem: Memory<MemoryValue>) (expr: Expression) : Memory<Me
   match expr with
   | Value v                 -> mem, v
   | Read id                 -> mem, readMemory mem id
-  | Write (id, e, _rec)     -> if Functions.ContainsKey id then Exception <| id + " is a reserved keyword" |> raise else
+  | Write (id, e, _rec, _)  -> if Functions.ContainsKey id then Exception <| id + " is a reserved keyword" |> raise else
                                let m1, v1 = evalExpression mem e
                                let v2 = match (v1, _rec) with
                                         | (LambdaExpr (s, e, p, r), true) -> LambdaExpr (s, e, p, Some id)

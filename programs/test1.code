@@ -1,5 +1,5 @@
-let x = 2
-let y = x + 2
+let y :: int = 2
 echo y
-let z = x * y
-echo z
+let x :: int = y + 1
+let lit :: 2 = 2
+let ls :: "henk" = "henk"

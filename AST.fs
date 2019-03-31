@@ -15,7 +15,7 @@ type MemoryValue =
 and Expression = 
 | Value of MemoryValue
 | Read of id: string
-| Write of id: string * expr: Expression * _rec: bool
+| Write of id: string * expr: Expression * _rec: bool * _type: Type
 | Lambda of param: string * exprs: Expression list
 | Apply of func: Expression * param: Expression
 | Nested of Expression
@@ -37,6 +37,17 @@ and Expression =
 | Open of string
 
 and Memory<'m> = List<Map<string, 'm>>
+
+and Literal = 
+| StringLiteral of string
+| IntLiteral of int
+| BoolLiteral of bool
+| UnitLiteral
+
+and Type = 
+| NamedType of string
+| LiteralType of Literal
+| FunctionType of Type * Type
 
 let readMemory<'m> (mem: Memory<'m>) (id: string) =
   List.tryPick (fun scope -> if Map.containsKey id scope then scope.[id] |> Some else None) mem
