@@ -23,6 +23,8 @@ let int = ['-' '+']? ['0'-'9']+
 rule tokenstream = 
 parse
   | "::"          { Parser.TYPE }
+  | "&&"          { Parser.AND }
+  | "||"          { Parser.OR }
   | "open"        { Parser.OPEN }
   | "rec"         { Parser.REC }
   | "with"        { Parser.WITH }

@@ -11,7 +11,7 @@ open AST
 %token ARROW LPAR RPAR LSQBR RSQBR COMMA
 %token EQUALS NOT BIGGER SMALLER
 %token PLUS MIN TIMES DIVIDE
-%token QUESTION ELSE
+%token QUESTION ELSE AND OR
 %token < string > ID
 %token < string > STRING
 %token < int32 > INT
@@ -40,13 +40,18 @@ atomic:
   | STRING                                            { String $1 }
 
 expression:
-  | LET ID TYPE typing EQUALS expression1             { Write ($2, $6, false, $4) }
-  | LET REC ID TYPE typing EQUALS expression1         { Write ($3, $7, true, $5) }
-  | ECHO expression1                                  { Echo $2 }
+  | LET ID TYPE typing EQUALS expression0             { Write ($2, $6, false, $4) }
+  | LET REC ID TYPE typing EQUALS expression0         { Write ($3, $7, true, $5) }
+  | ECHO expression0                                  { Echo $2 }
+  | expression0                                       { $1 }
+
+expression0:
+  | OPEN ID                                           { Open $2 }
+  | expression0 AND expression1                       { And ($1, $3) }
+  | expression0 OR expression1                        { Or ($1, $3) }
   | expression1                                       { $1 }
 
 expression1:
-  | OPEN ID                                           { Open $2 }
   | expression1 QUESTION expression1 COLON expression1 { Condition ($1, $3, $5) }
   | expression1 EQUALS EQUALS expression2             { Equals ($1, $4)}
   | expression1 NOT EQUALS expression2                { NotEquals ($1, $4)}
