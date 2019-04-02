@@ -1,3 +1,9 @@
 let y :: int = 2
 let yy :: 1 = y == 1 ? y : 1
 echo yy
+let x :: 1 -> int = i :: int -> {
+  let ii :: int = 1
+  ii
+}
+let xx :: int = x(1)
+echo xx

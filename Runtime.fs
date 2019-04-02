@@ -18,7 +18,7 @@ let rec evalExpression (mem: Memory<MemoryValue>) (expr: Expression) : Memory<Me
                                         | _ -> v1
                                let m2 = writeMemory m1 id v2
                                m2, Unit ()
-  | Lambda (p, es)          -> mem, LambdaExpr (mem, es, p, None)
+  | Lambda (p, _, es)       -> mem, LambdaExpr (mem, es, p, None)
   | Apply (e, p)            -> match e with
                                | Read i when Functions.ContainsKey i -> let (m1, p1) = evalExpression mem p
                                                                         Functions.[i] mem p1
