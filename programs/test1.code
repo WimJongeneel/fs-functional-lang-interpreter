@@ -8,6 +8,11 @@ let x :: 1 -> int = i :: int -> {
 let xx :: int = x(1)
 echo xx
 
-let f :: int -> int -> 1 = i :: int -> ii :: 1 -> i + ii
-let ff :: 1 -> int = f(1)
-let ff :: int = ff(1)
+let f :: (int -> int) -> int = f :: (int -> int) -> f(1)
+echo f(x :: int -> x + 10)
+
+let compose :: (int -> int) -> (int -> int) -> (int -> int) = f :: (int -> int) -> g :: (int -> int) -> x :: int -> g(f(x))
+let add1 :: int -> int = x :: int -> x + 1
+let times2 :: int -> int = x :: int -> x * 2
+let c :: int -> int = compose(times2)(add1)
+echo c(1)

@@ -48,6 +48,8 @@ and Type =
 | NamedType         of string
 | LiteralType       of Literal
 | FuncType          of Type * Type
+| NestedType        of Type
+| ArrayType         of Type
 
 let readMemory<'m> (mem: Memory<'m>) (id: string) =
   List.tryPick (fun scope -> if Map.containsKey id scope then scope.[id] |> Some else None) mem

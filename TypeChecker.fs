@@ -9,6 +9,7 @@ type TypeEntry =
   | BoolType      of bool option
   | StringType    of string option
   | FunctionType  of param: TypeEntry * ret: TypeEntry
+  | ArrayType     of TypeEntry
 
 let rec typeCheckExpression (mem: Memory<TypeEntry>) (expr: Expression): Memory<TypeEntry> * TypeEntry =
   match expr with
@@ -136,6 +137,7 @@ and typeToTypeEntry (t: Type) =
                            | "bool"          -> BoolType None
                            | _               -> UnitType
   | FuncType (p, r)     -> FunctionType (typeToTypeEntry p, typeToTypeEntry r)
+  | NestedType t        -> typeToTypeEntry t
 
 and typeCheckFuncBody (mem: Memory<TypeEntry>) (exprs: Expression list) (paramAlias: string) (param: TypeEntry): TypeEntry =
   let mutable m1: Memory<TypeEntry> = Map.empty :: mem
