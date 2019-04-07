@@ -45,7 +45,7 @@ let rec evalExpression (mem: Memory<MemoryValue>) (expr: Expression) : Memory<Me
                                 | Bool true -> evalExpression m1 i
                                 | Bool false -> evalExpression m1 e
                                 | _ -> Exception "Expected bool for if" |> raise
-  | ArrayInit (l)           -> let list = List.map (evalExpression mem >> snd) l
+  | ArrayInit (l, _)        -> let list = List.map (evalExpression mem >> snd) l
                                (mem, Array.ofList list |> Array)
   | ArrayGet (e, i)         -> let m1, list = evalExpression mem e
                                let m2, index = evalExpression m1 i

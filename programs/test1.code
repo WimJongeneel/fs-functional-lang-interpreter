@@ -16,3 +16,7 @@ let add1 :: int -> int = x :: int -> x + 1
 let times2 :: int -> int = x :: int -> x * 2
 let c :: int -> int = compose(times2)(add1)
 echo c(1)
+
+let a :: int[] = int [1,2,3 + 2]
+let z :: int = a.[1 + 1]
+echo z

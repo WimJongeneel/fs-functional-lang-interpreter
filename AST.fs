@@ -29,7 +29,7 @@ and Expression =
 | Condition         of con: Expression * _then: Expression * _else: Expression
 | And               of left: Expression * rigth: Expression
 | Or                of left: Expression * rigth: Expression
-| ArrayInit         of Expression list
+| ArrayInit         of items: Expression list * _type: Type
 | ArrayGet          of list: Expression * index: Expression
 | ObjectInit        of (string * Expression) list
 | ObjectGet         of obj: Expression * key: string

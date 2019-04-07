@@ -95,7 +95,16 @@ let rec typeCheckExpression (mem: Memory<TypeEntry>) (expr: Expression): Memory<
                                | FunctionType (p, r) when isAssignable p pt -> m2, r
                                | FunctionType (p, _)                        -> Exception <| sprintf "Given value '%A' is not assignable to param '%A'" pt p |> raise
                                | _                                          -> Exception <| sprintf "No not callable:  '%A'" e |> raise
-  // Arrays
+  | ArrayInit (i, t)        -> let t1 = typeToTypeEntry t
+                               List.map (fun e -> (let _, t2 = typeCheckExpression mem e;
+                                                if isAssignable t1 t2 |> not 
+                                                then Exception <| sprintf "cannot assign '%A' to '%A'" t1 t |> raise)) i
+                               mem, ArrayType t1
+  | ArrayGet (a, i)         -> let m1, a1 = typeCheckExpression mem a
+                               let m2, i1 = typeCheckExpression m1 i
+                               match (a1, i1) with
+                               | (ArrayType t, IntType _) -> m2, t
+                               | _                        -> Exception "Cannot index '%A' with '%A'" |> raise
   // Objects
   | _                       -> Exception <| sprintf "No type for %A" expr |> raise
 
@@ -109,6 +118,7 @@ and isAssignable (expected: TypeEntry) (given: TypeEntry) =
   | (BoolType b1, BoolType _) when b1.IsNone                  -> true
   | (UnitType, UnitType)                                      -> true
   | (FunctionType (p1, r1), FunctionType(p2, r2))             -> isAssignable p2 p1 && isAssignable r1 r2
+  | (ArrayType t1, ArrayType t2)                              -> isAssignable t1 t2
   | _                                                         -> false
 
 and narrowIfScope (mem: Memory<TypeEntry>) (pred: Expression) : Memory<TypeEntry> =
@@ -138,6 +148,7 @@ and typeToTypeEntry (t: Type) =
                            | _               -> UnitType
   | FuncType (p, r)     -> FunctionType (typeToTypeEntry p, typeToTypeEntry r)
   | NestedType t        -> typeToTypeEntry t
+  | Type.ArrayType t    -> ArrayType <| typeToTypeEntry t
 
 and typeCheckFuncBody (mem: Memory<TypeEntry>) (exprs: Expression list) (paramAlias: string) (param: TypeEntry): TypeEntry =
   let mutable m1: Memory<TypeEntry> = Map.empty :: mem
