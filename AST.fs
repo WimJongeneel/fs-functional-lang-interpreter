@@ -35,6 +35,7 @@ and Expression =
 | ObjectGet         of obj: Expression * key: string
 | ObjectCopyWith    of obj: Expression * newValue: (string * Expression)
 | Open              of string
+| TypeAlias         of name: string * _type: Type
 
 and Memory<'m> = List<Map<string, 'm>>
 
@@ -50,6 +51,7 @@ and Type =
 | FuncType          of Type * Type
 | NestedType        of Type
 | ArrayType         of Type
+| ObjectType        of (string * Type) list
 
 let readMemory<'m> (mem: Memory<'m>) (id: string) =
   List.tryPick (fun scope -> if Map.containsKey id scope then scope.[id] |> Some else None) mem
@@ -58,3 +60,4 @@ let readMemory<'m> (mem: Memory<'m>) (id: string) =
 let writeMemory<'m> (mem: Memory<'m>) (id: string) (v: 'm) =
   let scope = mem.Head |> fun scope -> scope.Add (id, v)
   scope :: mem.Tail
+

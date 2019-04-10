@@ -21,7 +21,6 @@ let Functions: Map<string, Memory<MemoryValue> -> MemoryValue -> Memory<MemoryVa
                               | String s   -> int s |> Int
                               | _          -> Unit ())
   ("count", fun mem p -> mem, match p with
-                              | Array a    -> a.Length |> Int
                               | String s   -> s.Length |> Int
                               | _          -> Unit ())
   ("type", fun mem p -> mem, match p with

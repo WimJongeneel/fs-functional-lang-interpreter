@@ -1,4 +1,5 @@
 %{
+
 open AST
 
 %}
@@ -7,7 +8,7 @@ open AST
 %start start
 
 // Regular tokens
-%token LET SEPERATOR ECHO LCB RCB UNIT DOT COLON WITH REC TYPE
+%token LET SEPERATOR ECHO LCB RCB UNIT DOT COLON WITH REC TYPE TYPE_ALIAS
 %token ARROW LPAR RPAR LSQBR RSQBR COMMA
 %token EQUALS NOT BIGGER SMALLER
 %token PLUS MIN TIMES DIVIDE
@@ -30,14 +31,18 @@ open AST
 start: program EOF { $1 }
 
 program:
-  | expression                                        { [$1] }
-  | expression program                                { $1 :: $2 }
+  | root_expression                                   { [$1] }
+  | root_expression program                           { $1 :: $2 }
 
 atomic:
   | INT                                               { Int $1 }
   | BOOL                                              { Bool $1 }
   | UNIT                                              { Unit () }
   | STRING                                            { String $1 }
+
+root_expression:
+  | expression                                        { $1 }
+  | type_alias                                        { $1 }
 
 expression:
   | LET ID TYPE typing EQUALS expression0             { Write ($2, $6, false, $4) }
@@ -101,3 +106,11 @@ typing:
   | typing ARROW typing                                { FuncType ($1, $3) }
   | LPAR typing RPAR                                   { NestedType $2 }
   | typing LSQBR RSQBR                                 { ArrayType $1}
+  | LCB type_list RCB                                  { ObjectType $2 }
+
+type_list:
+  | ID COLON typing                                    { [($1, $3)] }
+  | ID COLON typing COMMA type_list                    { ($1, $3) :: $5 }
+
+type_alias:
+  | TYPE_ALIAS ID EQUALS typing                        { TypeAlias ($2, $4) }

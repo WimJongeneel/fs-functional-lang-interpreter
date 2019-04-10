@@ -30,7 +30,7 @@ let rec evalExpression (mem: Memory<MemoryValue>) (expr: Expression) : Memory<Me
                                       m2, res
   | Nested e                -> evalExpression mem e
   | Echo e                  -> let (_, v) = evalExpression mem e
-                               printf "%A\n" v
+                               prettyPrint v |> printfn "%s"
                                mem, Unit ()
   | Equals (l,r)            -> evalEquals mem l r
   | NotEquals (l,r)         -> evalNotEquals mem l r
@@ -64,6 +64,7 @@ let rec evalExpression (mem: Memory<MemoryValue>) (expr: Expression) : Memory<Me
                                | Object r -> m2, Map.add (fst nv) v r |> Object
                                | _                      -> Exception "can not index the value" |> raise
   | Open s                  -> loadModule mem s
+  | _                       -> mem, Unit ()
 
 and loadModule (mem: Memory<MemoryValue>) (name: string): Memory<MemoryValue> * MemoryValue =
   let code = File.ReadAllText <| "./StandaardLib/" + name
@@ -150,6 +151,19 @@ and applyLamda (scope: Memory<MemoryValue>) (exprs: Expression list) (param: Mem
                     mem <- m1;
                     res <- v;)) exprs |> ignore
   res
+
+and prettyPrint (v: MemoryValue): string =
+  match v with
+  | Int i         -> string i
+  | Bool b        -> string b
+  | String s      -> s
+  | Unit _        -> "()"
+  | Array a       -> let mutable s = "[\n"
+                     Array.map (fun v -> (s <- s + "  " + (prettyPrint v) + ",\n")) a
+                     s + "]"
+  | Object p      -> let mutable s = "{\n"
+                     Map.map (fun id v -> (s <- s + "  id: " + (prettyPrint v) + ",\n")) p
+                     s + "}"
 
 let evalExpressions (exprs: Expression list) = 
   typeCheckExpressions exprs

@@ -11,7 +11,7 @@
   * [Math](#math)
   * [Comparison](#comparison)
 * [Modules](#modules)
-* [Conditionals](#Conditionals)
+* [Conditionals](#conditionals)
 * [Echo](#echo)
 
 ## REPL
