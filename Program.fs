@@ -4,6 +4,7 @@ open AST
 open Runtime
 open System.IO
 open InteractiveRuntime
+open TypeChecker
 
 [<EntryPoint>]
 let main argv =

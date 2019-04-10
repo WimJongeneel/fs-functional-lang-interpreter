@@ -1,3 +1,40 @@
-let x = read(())
-let i = int(x)
-echo i
+let y :: int = 2
+let yy :: 1 = y == 1 ? y : 1
+echo yy
+let x :: 1 -> int = i :: int -> {
+  let ii :: int = 1
+  ii
+}
+let xx :: int = x(1)
+echo xx
+
+let f :: (int -> int) -> int = f :: (int -> int) -> f(1)
+echo f(x :: int -> x + 10)
+
+type compose = (int -> int) -> (int -> int) -> int -> int
+let compose :: compose = f :: (int -> int) -> g :: (int -> int) -> x :: int -> g(f(x))
+let add1 :: int -> int = x :: int -> x + 1
+let times2 :: int -> int = x :: int -> x * 2
+let c :: int -> int = compose(times2)(add1)
+echo c(1)
+
+let a :: int[] = int [1,2,3 + 2]
+let z :: int = a.[1 + 1]
+echo z
+
+let ob :: { x: int } = { x: 1 }
+let aa :: int = ob.x
+let ob1 :: { x : int } = { ob with x: 3 }
+echo { x: 1, y: 3, z: 8 }
+echo int [1,2,3,4,5]
+
+type X = { x: 1 }
+
+let xx :: X = { x: 1 }
+let xx1 :: { x: int } = xx
+
+
+type p = int[]
+let pf :: p -> int = a :: p -> a.[0]
+
+echo pf(int[1])

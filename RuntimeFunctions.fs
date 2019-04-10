@@ -3,7 +3,7 @@ module RuntimeFunctions
 open System.IO
 open AST
 
-let Functions: Map<string, Memory -> MemoryValue -> Memory * MemoryValue> = Map.ofArray [|
+let Functions: Map<string, Memory<MemoryValue> -> MemoryValue -> Memory<MemoryValue> * MemoryValue> = Map.ofArray [|
   ("read", fun mem p -> mem, System.Console.ReadLine() |> String)
   ("string", fun mem p -> mem, match p with
                                 | String s -> p
@@ -21,7 +21,6 @@ let Functions: Map<string, Memory -> MemoryValue -> Memory * MemoryValue> = Map.
                               | String s   -> int s |> Int
                               | _          -> Unit ())
   ("count", fun mem p -> mem, match p with
-                              | Array a    -> a.Length |> Int
                               | String s   -> s.Length |> Int
                               | _          -> Unit ())
   ("type", fun mem p -> mem, match p with

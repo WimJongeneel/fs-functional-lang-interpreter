@@ -6,11 +6,12 @@
   * [Arrays](#arrays)
   * [Records](#records)
   * [Lambdas](#lambdas)
+* [Types](#types)
 * [Operators](#operators)
   * [Math](#math)
   * [Comparison](#comparison)
 * [Modules](#modules)
-* [Conditionals](#Conditionals)
+* [Conditionals](#conditionals)
 * [Echo](#echo)
 
 ## REPL
@@ -83,6 +84,21 @@ let f1 = x -> {
 Recursion is supported with the `rec` keyword:
 ```
 let rec f = x -> f(1)
+```
+
+## Types
+The language has a typechecker that will check your code on correctness. The primitive types are:
+* string
+* int
+* bool
+* unit
+Every primitive types has literals types. A literal is a type with only one posible instance, e.g. `1` is a literal of int. Litarals are always directly assignable to their primitive. In that case the type is upcasted from the literal to the primitive. A primitive is only assigable to a literal when the value is checked to match the required value. The value will here (safely) be downcasted from the primitive to the literal.
+```
+let i :: int = 1
+let ii :: 1 = 1
+let x :: int = i //ok
+let xx :: 1 = i // error
+let xxx :: 1 = x == 1 ? x : 1 //ok
 ```
 
 ## Operators
