@@ -26,6 +26,7 @@ parse
   | "::"          { Parser.TYPE }
   | "&&"          { Parser.AND }
   | "|| "          { Parser.OR }
+  | "|"           { Parser.PIPE }
   | "open"        { Parser.OPEN }
   | "rec"         { Parser.REC }
   | "with"        { Parser.WITH }

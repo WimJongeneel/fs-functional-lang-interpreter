@@ -15,7 +15,7 @@ type MemoryValue =
 and Expression = 
 | Value             of MemoryValue
 | Read              of id: string
-| Write             of id: string * expr: Expression * _rec: bool * _type: Type
+| Write             of id: string * expr: Expression * _rec: bool * _type: Type option
 | Lambda            of param: string * paramType: Type * exprs: Expression list
 | Apply             of func: Expression * param: Expression
 | Nested            of Expression
@@ -52,6 +52,7 @@ and Type =
 | NestedType        of Type
 | ArrayType         of Type
 | ObjectType        of (string * Type) list
+| UnionType         of Type list
 
 let readMemory<'m> (mem: Memory<'m>) (id: string) =
   List.tryPick (fun scope -> if Map.containsKey id scope then scope.[id] |> Some else None) mem

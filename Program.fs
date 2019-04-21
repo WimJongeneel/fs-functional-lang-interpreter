@@ -9,6 +9,8 @@ open TypeChecker
 [<EntryPoint>]
 let main argv =
 
+  printfn "%A" <| isAssignable (UnionType [TypeEntry.UnitType; TypeEntry.IntType None; BoolType None]) (UnionType [TypeEntry.IntType <| Some 2; BoolType None])
+  
   if argv.[0] = "-i" then
     loop ()
   else

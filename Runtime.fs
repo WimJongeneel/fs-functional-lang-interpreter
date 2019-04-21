@@ -155,7 +155,7 @@ and applyLamda (scope: Memory<MemoryValue>) (exprs: Expression list) (param: Mem
 and prettyPrint (v: MemoryValue): string =
   match v with
   | Int i         -> string i
-  | Bool b        -> string b
+  | Bool b        -> if b then "true" else "false"
   | String s      -> s
   | Unit _        -> "()"
   | Array a       -> let mutable s = "[\n"
@@ -164,6 +164,7 @@ and prettyPrint (v: MemoryValue): string =
   | Object p      -> let mutable s = "{\n"
                      Map.map (fun id v -> (s <- s + "  id: " + (prettyPrint v) + ",\n")) p
                      s + "}"
+
 
 let evalExpressions (exprs: Expression list) = 
   typeCheckExpressions exprs
