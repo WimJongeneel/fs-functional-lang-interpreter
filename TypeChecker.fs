@@ -11,16 +11,22 @@ type TypeEntry =
   | FunctionType  of param: TypeEntry * ret: TypeEntry
   | ArrayType     of TypeEntry
   | ObjectType    of Map<string, TypeEntry>
+  | UnionType     of TypeEntry list
 
 let rec typeCheckExpression (types: Map<string, TypeEntry>) (mem: Memory<TypeEntry>) (expr: Expression): Memory<TypeEntry> * TypeEntry =
   match expr with
   | Read id                 -> mem, readMemory mem id
   | Write (id, expr, _, t)  -> let m1, t1 = typeCheckExpression types mem expr
-                               let rt = typeToTypeEntry types t
-                               let m2 = writeMemory m1 id rt
-                               match isAssignable rt t1 with
-                               | true   -> m2, UnitType
-                               | false  -> Exception <| sprintf "Type error in let '%s', cannot assign '%A' to '%A'" id t1 rt |> raise
+                               if t.IsNone 
+                                then
+                                  let m1 = writeMemory m1 id t1
+                                  m1, UnitType
+                                else
+                                  let rt = typeToTypeEntry types t.Value
+                                  let m2 = writeMemory m1 id rt
+                                  match isAssignable rt t1 with
+                                  | true   -> m2, UnitType
+                                  | false  -> Exception <| sprintf "Type error in let '%s', cannot assign '%A' to '%A'" id t1 rt |> raise
   | Value v                 -> mem, match v with
                                     | Int i     -> Some i |> IntType
                                     | Bool b    -> Some b |> BoolType
@@ -37,19 +43,16 @@ let rec typeCheckExpression (types: Map<string, TypeEntry>) (mem: Memory<TypeEnt
                                let m2, r1 = typeCheckExpression types m1 r
                                match (l1, r1) with
                                | (IntType _, IntType _)         -> m2, IntType None
-                               | (StringType _, StringType _)   -> m2, StringType None
                                | _                              -> Exception "type error with Min" |> raise
   | Times (l, r)            -> let m1, l1 = typeCheckExpression types mem l
                                let m2, r1 = typeCheckExpression types m1 r
                                match (l1, r1) with
                                | (IntType _, IntType _)         -> m2, IntType None
-                               | (StringType _, StringType _)   -> m2, StringType None
                                | _                              -> Exception "type error with Times" |> raise
   | Divide (l, r)           -> let m1, l1 = typeCheckExpression types mem l
                                let m2, r1 = typeCheckExpression types m1 r
                                match (l1, r1) with
                                | (IntType _, IntType _)         -> m2, IntType None
-                               | (StringType _, StringType _)   -> m2, StringType None
                                | _                              -> Exception "type error with Divide" |> raise
   | Echo e                  -> let m1, _ = typeCheckExpression types mem e
                                m1, UnitType
@@ -71,7 +74,7 @@ let rec typeCheckExpression (types: Map<string, TypeEntry>) (mem: Memory<TypeEnt
                                  then m2, ifT
                                  elif isAssignable falseT ifT
                                  then m2, falseT
-                                 else  Exception <| sprintf "type error in ? :, '%A' is not compatable with %A " ifT falseT |> raise
+                                 else m2, UnionType [ifT; falseT]
   | Nested e                -> typeCheckExpression types mem e
   | Equals (l ,r)           -> let m1, lt = typeCheckExpression types mem l
                                let m2, rt = typeCheckExpression types m1 r
@@ -104,8 +107,8 @@ let rec typeCheckExpression (types: Map<string, TypeEntry>) (mem: Memory<TypeEnt
   | ArrayGet (a, i)         -> let m1, a1 = typeCheckExpression types mem a
                                let m2, i1 = typeCheckExpression types m1 i
                                match (a1, i1) with
-                               | (ArrayType t, IntType _) -> m2, t
-                               | (StringType _, IntType _) -> m2, StringType None
+                               | (ArrayType t, IntType _) -> m2, UnionType [t; UnitType]
+                               | (StringType _, IntType _) -> m2, UnionType [StringType None; UnitType]
                                | _                        -> Exception "Cannot index '%A' with '%A'" |> raise
   | ObjectInit e            -> let exprs = Map.ofList e
                                mem, ObjectType <| Map.map (fun id e -> (let _, t = typeCheckExpression types mem e; 
@@ -140,6 +143,8 @@ and isAssignable (expected: TypeEntry) (given: TypeEntry) =
                                                                                                 else Some t1
                                                                                               )) o1
                                                                  unmatched.IsNone
+  | (_, UnionType cs2)                                        -> List.forall (fun c2 -> isAssignable expected c2) cs2
+  | (UnionType cs, _)                                         -> List.exists (fun c -> isAssignable c given) cs
   | _                                                         -> false
 
 and narrowIfScope (types: Map<string, TypeEntry>) (mem: Memory<TypeEntry>) (pred: Expression) : Memory<TypeEntry> =
@@ -170,28 +175,24 @@ and typeToTypeEntry (types: Map<string, TypeEntry>) (t: Type): TypeEntry =
   | FuncType (p, r)     -> FunctionType (typeToTypeEntry types p, typeToTypeEntry types r)
   | NestedType t        -> typeToTypeEntry types t
   | Type.ArrayType t    -> ArrayType <| typeToTypeEntry types t
-  | Type.ObjectType p   -> let props = Map.map (fun _ t -> typeToTypeEntry types t) <| Map.ofList p 
-                           ObjectType props
+  | Type.ObjectType p   -> Map.map (fun _ t -> typeToTypeEntry types t) <| Map.ofList p |> ObjectType
+  | Type.UnionType cs   -> List.map (fun c -> typeToTypeEntry types c) cs |> UnionType
 
 and typeCheckFuncBody (types: Map<string, TypeEntry>) (mem: Memory<TypeEntry>) (exprs: Expression list) (paramAlias: string) (param: TypeEntry): TypeEntry =
   let mutable m1: Memory<TypeEntry> = Map.empty :: mem
-  let mutable t : TypeEntry = UnitType
+  let mutable t: TypeEntry = UnitType
   m1 <- writeMemory mem paramAlias param
   List.map (fun e -> (let m2, t1 = typeCheckExpression types m1 e
                     m1 <- m2;
                     t <- t1)) exprs |> ignore
   t
 
-let typeAliasses (exprs: Expression list) : Map<string, TypeEntry> = 
-  List.filter (fun e -> (
+let typeAliasses (exprs: Expression list) : Map<string, TypeEntry> =  
+  List.collect (fun e -> (
     match e with
-    | TypeAlias _ -> true
-    | _           -> false
-  )) exprs 
-  |> List.map (fun e -> (
-    match e with
-    | TypeAlias (id, t) -> (id, typeToTypeEntry Map.empty t)
-  ))
+    | TypeAlias (id, t) -> [(id, typeToTypeEntry Map.empty t)]
+    | _                 -> []
+  )) exprs
   |> Map.ofList
 
 let typeCheckExpressions (exprs: Expression list) =

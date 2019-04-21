@@ -86,6 +86,14 @@ let f :: int -> int = x :: int -> {
 }
 ```
 
+### Unions
+Type unions are created by listing the case, seperated by the `|`. Conditionals of where the branches produce incopatible types will also be of a union of the 2 types.
+```
+let x :: int | bool = true
+let y = true ? 1 : true
+let z :: 1 | true = y
+```
+
 ### Type aliases
 Types can be given aliases to avoid repetition and extremely long expressions. They are created with `type [ID] = [TYPE]`.
 ```
@@ -119,3 +127,9 @@ let x :: int = 1
 let x1 :: 1 = x == 1 ? x : 1
 ```
 Because both of the branches return something that is assignable to the type `1` we can assign the variable x (of type `int`) to the literal of type `1`.
+
+### Type inference
+Variables can also be declared without an type. They will get the type the typechecker infers from the expression assigned to them. Type inference will not work on parameters for functions.
+```
+let x = 1
+let xx :: int = x
