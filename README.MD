@@ -1,132 +1,135 @@
-# Interpreter for a functional language
+## Bugs
+[ ] Type checking for build-in functions
+[ ] Type aliases in REPL
 
-* [REPL](#repl)
-* [Variables](#variables)
-  * [Primitives](#primitives)
-  * [Arrays](#arrays)
-  * [Records](#records)
-  * [Lambdas](#lambdas)
-* [Types](#types)
-* [Operators](#operators)
-  * [Math](#math)
-  * [Comparison](#comparison)
-* [Modules](#modules)
-* [Conditionals](#conditionals)
-* [Echo](#echo)
+## Typesystem
 
-## REPL
-run the interperter with the `-i` flag to launchs the REPL. In here you can experiment with the langauge.
-```
--- REPL ready
---
--- commands:
---   type ':mem' to inspect the runtimes memory
---   type ':store [ID]' to store the last result in memory 
---   type ':save [FILE]' to save your code in a file 
---   type ':close' to close the session 
---
--- happy coding
+The language is strict and strongly typed. There is support for all the well-know primitives, literals, arrays, records and lambdas.
+
+### Int
+Ints contains a 32 bit integer value. There type is written als `int`. Ints also support literal typing. With literal typing we restrict the type to a specific value. A int literal is created by it's value (e.g `1` or `2`).
+```hs
+let i :: int = 1
+let i1 :: 1 = 1
+let i2 :: 2 = 2
 ```
 
-## Variables
-Variables are created with the `let` keyword. For example:
+### String
+String contains a sequence of caracters. There type is written als `string`. They also support literal typing. You can get the length of a string with `count("string")`. A specific index is accesed with `.[ID]`.
 ```
-let x = 1
+let s :: string = "hello"
+let s1 :: "x" = "x"
+let s2 :: "hello" = "hello"
+let s3 :: string = s2.[1]
+let size :: int = count(s2)
 ```
-The language has lexial scoping. 
 
-### Primitives
-The different types of primitives are: `Int`, `Bool` and `String`.
+### Bool
+Bools contains true of false. They support literal typing.
+```hs
+let b :: bool = true
+let b1 :: true = true
 ```
-let n = 1
-let s = "string"
-let b = true
+
+### Unit
+Unit is used as the no-data type. It's type is written als `()`.
+```hs
+let u :: () = ()
 ```
 
 ### Arrays
-Arrays are created with the `[` and `]`. It is posible to mix types within an array.
+Arrays contain multiple values of the same type. Their type is writting by post-fixing the inner type with `[]`. When constructing an array you pre-fix the array with the type (e.g `int [1]`). You can get the length again with `count(int[])`
+```hs
+let a :: int[] = int []
+let a1 :: int[] = int [1, 2, 3]
+let a2 :: 1[] = int [1, 1, 1]
+let l :: int = count(a2)
 ```
-let ar = [1,2,3]
-let mix = [1, true, "string"]
-```
-Items are accesed with the `.[INDEX]`.
-```
-let arr = [1,3]
-let x = arr.[1]
-``` 
 
 ### Records
-Records are object witch store key-value pairs. The look as follows:
+Records contain key-value pairs. They are created with `{}`. You are allowed to have more properties in the actuval value then are requested by the type. However, the type system will in feature reference act like they aren't there.
+```hs
+let empty :: {} = {}
+let o :: { x: 1 } = { x: 1 }
+let o2 :: { x: 1, y: 3} = {x: 1, y: 3}
+let o3 :: { y: 3 } = { x: 1, y: 3 }
 ```
-let r = {
-  x: 1,
-  xx: true,
-  xxx: "string"
-}
+You can acces properties with `obj.ID`.
+```hs
+let o2 :: { x: 1, y: 3} = {x: 1, y: 3}
+let x :: 1 = o2.x
 ```
-Properties can be accesed with `.ID`:
-```
-r.xx
+You can copy objects with an updated property like this:
+```hs
+let o2 :: { x: 1, y: int } = { x: 1, y: 3 }
+let o3 :: { x: 1, y: int } = { o2 with y: 7 }
 ```
 
-### Lambdas
-Lambdas are created with the `->`:
+### Lambda
+Lambda's are created with the `->`. When creating a lambda you always have to specify the type of the argument (`[PARAM] :: [TYPE] -> [EXPRESSION]`). There type is written with `[TYPE] -> [TYPE]`.
+```hs
+let f :: int -> int = x :: int -> x + 1
 ```
-let f = x -> x + 1
+a lambda can return an other lambda. This means that multiple arguments and curring are supported. 
+```hs
+let add :: int -> int -> int = x :: int -> y :: int -> x + y
 ```
-Lambdas can contain multiple expresion with a codeblock. The last expression is the return value.
+You can also pass a lambda as an argument to another lambda. For this you need `()` in the argument type:
+```hs
+let f :: (int -> int) -> int = g :: (int -> int) -> g(1)
 ```
-let f1 = x -> {
+Lambda's can have function body when using `{}`. The last expression is the return value. Lambda's get lexial scoping.
+```hs
+let f :: int -> int = x :: int -> {
   echo x
   x + 1
 }
 ```
-Recursion is supported with the `rec` keyword:
-```
-let rec f = x -> f(1)
+
+### Unions
+Type unions are created by listing the case, seperated by the `|`. Conditionals of where the branches produce incopatible types will also be of a union of the 2 types.
+```hs
+let x :: int | bool = true
+let y = true ? 1 : true
+let z :: 1 | true = y
 ```
 
-## Types
-The language has a typechecker that will check your code on correctness. The primitive types are:
-* string
-* int
-* bool
-* unit
-Every primitive types has literals types. A literal is a type with only one posible instance, e.g. `1` is a literal of int. Litarals are always directly assignable to their primitive. In that case the type is upcasted from the literal to the primitive. A primitive is only assigable to a literal when the value is checked to match the required value. The value will here (safely) be downcasted from the primitive to the literal.
-```
-let i :: int = 1
-let ii :: 1 = 1
-let x :: int = i //ok
-let xx :: 1 = i // error
-let xxx :: 1 = x == 1 ? x : 1 //ok
-```
+### Type aliases
+Types can be given aliases to avoid repetition and extremely long expressions. They are created with `type [ID] = [TYPE]`.
+```hs
+type String = string
+type compose = (int -> int) -> (int -> int) -> int -> int
+let compose :: compose = f :: (int -> int) -> g :: (int -> int) -> x -> g(f(x))
 
-## Operators
+type user = { 
+  id: int,
+  username: string 
+}
 
-### Math
-The math operators are, in order of predence:
-* `*`: `1 * 1`
-* `/`: `1 / 1`
-* `+`: `1 + 1`
-* `-`: `1 - 1`
-
-### Comparison
-the comparison operators are `==` and `!=`
-
-## Modules
-Modules of the standard lib are loaded with `open [NAME]`. The modules are:
-* List: list implementation in the language
-* Option: optoin monad implementation in the language
-
-## Conditionals
-Conditionals are supported with the `prediction ? when-true : when-false`.
-```
-let bool_to_int = b -> b ? 1 : 0
+let user :: user = {
+  id: 1,
+  username: "Dave"
+}
 ```
 
-## Echo
-use `echo [EXPR]` to print the result of a expresion.
+### Notes on literals
+Literal types are directly assignable to their corresponding primitive:
+```hs
+let x :: 1 = 1
+let x1 :: int = x
+
+let xx :: { x: 1 } = { x: 1}
+let xx1 :: { x: int } = xx
 ```
-echo 1
-echo 1 + 1
+Conditionals can be used to narrow a primitive to a literal type:
+```hs
+let x :: int = 1
+let x1 :: 1 = x == 1 ? x : 1
 ```
+Because both of the branches return something that is assignable to the type `1` we can assign the variable x (of type `int`) to the literal of type `1`.
+
+### Type inference
+Variables can also be declared without an type. They will get the type the typechecker infers from the expression assigned to them. Type inference will not work on parameters for functions.
+```hs
+let x = 1
+let xx :: int = x
