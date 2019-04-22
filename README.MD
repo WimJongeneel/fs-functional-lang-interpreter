@@ -16,7 +16,7 @@ let i2 :: 2 = 2
 
 ### String
 String contains a sequence of caracters. There type is written als `string`. They also support literal typing. You can get the length of a string with `count("string")`. A specific index is accesed with `.[ID]`.
-```
+```hs
 let s :: string = "hello"
 let s1 :: "x" = "x"
 let s2 :: "hello" = "hello"
