@@ -1,6 +1,6 @@
 ## Bugs
-[ ] Type checking for build-in functions
-[ ] Type aliases in REPL
+* [ ] Type checking for build-in functions
+* [ ] Type aliases in REPL
 
 ## Typesystem
 
