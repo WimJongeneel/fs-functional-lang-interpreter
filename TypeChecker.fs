@@ -12,7 +12,7 @@ type TypeEntry =
   | ArrayType     of TypeEntry
   | ObjectType    of Map<string, TypeEntry>
   | UnionType     of TypeEntry list
-  | GenericType   of id: string * restrictions: List<TypeEntry>
+  | GenericType   of restrictions: List<TypeEntry>
 
 type TypeCheckerState = {
   vals: Memory<TypeEntry>
@@ -98,7 +98,9 @@ let rec typeCheckExpression (expr: Expression) (s0: TypeCheckerState): TypeCheck
                                | (IntType _, IntType _)         -> s2, BoolType None
                                | (UnitType _, UnitType _)       -> s2, BoolType None
                                | _                              -> Exception <| sprintf "Type error with '%A' != '%A'" l r |> raise
-  | Lambda (p, t, gs, eb)   -> s0, FunctionType <| (typeToTypeEntry s0.types t, Map.empty, typeCheckFuncBody s0 eb p <| typeToTypeEntry s0.types t)
+  | Lambda (p, t, gs, eb)   -> let generics = Map.map (fun id r -> GenericType <| List.map (fun r -> typeToTypeEntry s0.types r) r) gs
+                               let paramType = typeToTypeEntry s0.types t
+                               s0, FunctionType <| (typeToTypeEntry s0.types t, Map.empty, typeCheckFuncBody s0 eb p paramType generics)
   | Apply (e, pe)           -> let s1, funcType = typeCheckExpression e s0  // this needs to updated to resolve the return type based on the generic type arguments
                                let s2, pt = typeCheckExpression pe s1
                                match funcType with
@@ -152,6 +154,8 @@ and isAssignable (expected: TypeEntry) (given: TypeEntry) =
                                                                  unmatched.IsNone
   | (_, UnionType cs2)                                        -> List.forall (fun c2 -> isAssignable expected c2) cs2
   | (UnionType cs, _)                                         -> List.exists (fun c -> isAssignable c given) cs
+  | (GenericType r1, _)                                       -> r1.IsEmpty = false && List.forall (fun c -> isAssignable c given) r1
+  | (_, GenericType r2)                                       -> r2.IsEmpty = false && List.forall (fun c -> isAssignable expected c) r2
   | _                                                         -> false
 
 and narrowIfScope (s0: TypeCheckerState) (pred: Expression) : Memory<TypeEntry> =
@@ -185,12 +189,12 @@ and typeToTypeEntry (types: Memory<TypeEntry>) (t: Type): TypeEntry =
   | Type.ObjectType p   -> Map.map (fun _ t -> typeToTypeEntry types t) <| Map.ofList p |> ObjectType
   | Type.UnionType cs   -> List.map (fun c -> typeToTypeEntry types c) cs |> UnionType
 
-and typeCheckFuncBody (s0: TypeCheckerState) (exprs: Expression list) (paramAlias: string) (param: TypeEntry) (* (generics: string*TypeEntry list) *): TypeEntry =
+and typeCheckFuncBody (s0: TypeCheckerState) (exprs: Expression list) (paramAlias: string) (param: TypeEntry) (generics: Map<string,TypeEntry>): TypeEntry =
   let mutable m1: Memory<TypeEntry> = Map.empty :: s0.vals
-  // let types = generics :: s0.types 
+  let types = generics :: s0.types 
   let mutable t: TypeEntry = UnitType
   m1 <- writeMemory m1 paramAlias param
-  List.map (fun e -> (let s1, t1 = typeCheckExpression e {s0 with vals = m1 } (* { types: types; vals = m1 } *)
+  List.map (fun e -> (let s1, t1 = typeCheckExpression e { types = types; vals = m1 }
                     m1 <- s1.vals;
                     t <- t1)) exprs |> ignore
   t

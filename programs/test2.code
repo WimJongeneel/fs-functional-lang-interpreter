@@ -8,5 +8,8 @@ echo xx
 let f = i :: int -> i + 1
 echo f(x)
 
-let ff = <a, b>i :: int -> i2 :: int -> 1 * i2
-echo ff(i)(x)
+let ff = <a :: int> i :: int -> {
+  let a :: a = 1
+  a
+} 
+echo ff

@@ -97,13 +97,15 @@ prop_list:
 
 lambda:
   | ID TYPE typing ARROW LCB program RCB                  { Lambda ($1, $3, Map.empty, $6)}
-  | LAB id_list RAB ID TYPE typing ARROW LCB program RCB  { Lambda ($4, $6, listToMapKeys $2, $9)}
+  | LAB id_list RAB ID TYPE typing ARROW LCB program RCB  { Lambda ($4, $6, $2, $9)}
   | ID TYPE typing ARROW expression                       { Lambda ($1, $3, Map.empty, [$5])}
-  | LAB id_list RAB ID TYPE typing ARROW expression0      { Lambda ($4, $6, listToMapKeys $2, [$8])}
+  | LAB id_list RAB ID TYPE typing ARROW expression0      { Lambda ($4, $6, $2, [$8])}
 
 id_list:
-  | ID                                                    { [$1] }
-  | ID COMMA id_list                                      { $1 :: $3 }
+  | ID TYPE typing                                        { Map.ofList [($1, [$3])] }
+  | ID                                                    { Map.ofList [($1, [])] }
+  | ID TYPE typing COMMA id_list                          { $5.Add ($1, [$3])}
+  | ID COMMA id_list                                      { $3.Add ($1, [])}
 
 typing: 
   | ID                                                    { NamedType $1 }

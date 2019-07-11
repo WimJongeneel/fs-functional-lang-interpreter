@@ -16,7 +16,7 @@ and Expression =
 | Value             of MemoryValue
 | Read              of id: string
 | Write             of id: string * expr: Expression * _rec: bool * _type: Type option
-| Lambda            of param: string * paramType: Type * generics: Map<string, (* restrictions *) unit> * exprs: Expression list
+| Lambda            of param: string * paramType: Type * generics: Map<string, Type list> * exprs: Expression list
 | Apply             of func: Expression * param: Expression
 | Nested            of Expression
 | Echo              of Expression

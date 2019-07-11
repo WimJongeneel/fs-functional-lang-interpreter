@@ -164,6 +164,7 @@ and prettyPrint (v: MemoryValue): string =
   | Object p      -> let mutable s = "{\n"
                      Map.map (fun id v -> (s <- s + "  " + id + ": " + (prettyPrint v) + ",\n")) p |> ignore
                      s + "}"
+  | _             -> sprintf "%A" v
 
 
 let evalExpressions (exprs: Expression list) = 
