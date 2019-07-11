@@ -8,7 +8,7 @@ type TypeEntry =
   | IntType       of int option
   | BoolType      of bool option
   | StringType    of string option
-  | FunctionType  of param: TypeEntry * ret: TypeEntry
+  | FunctionType  of param: TypeEntry * generics: Map<string, (* restrictions *) List<TypeEntry>> * ret: TypeEntry
   | ArrayType     of TypeEntry
   | ObjectType    of Map<string, TypeEntry>
   | UnionType     of TypeEntry list
@@ -98,12 +98,12 @@ let rec typeCheckExpression (expr: Expression) (s0: TypeCheckerState): TypeCheck
                                | (IntType _, IntType _)         -> s2, BoolType None
                                | (UnitType _, UnitType _)       -> s2, BoolType None
                                | _                              -> Exception <| sprintf "Type error with '%A' != '%A'" l r |> raise
-  | Lambda (p, t, eb)       -> s0, FunctionType (typeToTypeEntry s0.types t, typeCheckFuncBody s0 eb p <| typeToTypeEntry s0.types t)
+  | Lambda (p, t, gs, eb)   -> s0, FunctionType <| (typeToTypeEntry s0.types t, Map.empty, typeCheckFuncBody s0 eb p <| typeToTypeEntry s0.types t)
   | Apply (e, pe)           -> let s1, funcType = typeCheckExpression e s0  // this needs to updated to resolve the return type based on the generic type arguments
                                let s2, pt = typeCheckExpression pe s1
                                match funcType with
-                               | FunctionType (p, r) when isAssignable p pt -> s2, r
-                               | FunctionType (p, _)                        -> Exception <| sprintf "Given value '%A' is not assignable to param '%A'" pt p |> raise
+                               | FunctionType (p, _, r) when isAssignable p pt -> s2, r
+                               | FunctionType (p, _, _)                        -> Exception <| sprintf "Given value '%A' is not assignable to param '%A'" pt p |> raise
                                | _                                          -> Exception <| sprintf "No not callable:  '%A'" e |> raise
   | ArrayInit (i, t)        -> let t1 = typeToTypeEntry s0.types t
                                List.map (fun e -> (let _, t2 = typeCheckExpression e s0;
@@ -142,7 +142,7 @@ and isAssignable (expected: TypeEntry) (given: TypeEntry) =
   | (BoolType b1, BoolType b2) when b1.IsSome && b2.IsSome     -> b1.Value = b2.Value
   | (BoolType b1, BoolType _) when b1.IsNone                  -> true
   | (UnitType, UnitType)                                      -> true
-  | (FunctionType (p1, r1), FunctionType(p2, r2))             -> isAssignable p2 p1 && isAssignable r1 r2
+  | (FunctionType (p1, _, r1), FunctionType(p2, _, r2))       -> isAssignable p2 p1 && isAssignable r1 r2
   | (ArrayType t1, ArrayType t2)                              -> isAssignable t1 t2
   | (ObjectType o1, ObjectType o2)                            -> let unmatched = Map.tryPick (fun id t1 -> (
                                                                                                 if o2.ContainsKey id && isAssignable t1 o2.[id]
@@ -179,7 +179,7 @@ and typeToTypeEntry (types: Memory<TypeEntry>) (t: Type): TypeEntry =
                            | "int"           -> IntType None
                            | "bool"          -> BoolType None
                            | _               -> readMemory types nt
-  | FuncType (p, r)     -> FunctionType (typeToTypeEntry types p, typeToTypeEntry types r)
+  | FuncType (p, r)     -> FunctionType (typeToTypeEntry types p, Map.empty, typeToTypeEntry types r)
   | NestedType t        -> typeToTypeEntry types t
   | Type.ArrayType t    -> ArrayType <| typeToTypeEntry types t
   | Type.ObjectType p   -> Map.map (fun _ t -> typeToTypeEntry types t) <| Map.ofList p |> ObjectType
