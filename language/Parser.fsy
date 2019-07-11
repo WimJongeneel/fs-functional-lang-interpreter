@@ -8,7 +8,7 @@ open AST
 %start start
 
 // Regular tokens
-%token LET SEPERATOR ECHO LCB RCB UNIT DOT COLON WITH REC TYPE TYPE_ALIAS PIPE
+%token LET SEPERATOR ECHO LCB RCB UNIT DOT COLON WITH REC TYPE TYPE_ALIAS PIPE LAB RAB
 %token ARROW LPAR RPAR LSQBR RSQBR COMMA
 %token EQUALS NOT BIGGER SMALLER
 %token PLUS MIN TIMES DIVIDE
@@ -97,7 +97,13 @@ prop_list:
 
 lambda:
   | ID TYPE typing ARROW LCB program RCB                  { Lambda ($1, $3, $6)}
+  | LAB id_list RAB ID TYPE typing ARROW LCB program RCB  { Lambda ($4, $6, $9)}
   | ID TYPE typing ARROW expression                       { Lambda ($1, $3, [$5])}
+  | LAB id_list RAB ID TYPE typing ARROW expression0      { Lambda ($4, $6, [$8])}
+
+id_list:
+  | ID                                                    { [$1] }
+  | ID COLON id_list                                      { $1 :: $3 }
 
 typing: 
   | ID                                                    { NamedType $1 }

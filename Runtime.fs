@@ -159,10 +159,10 @@ and prettyPrint (v: MemoryValue): string =
   | String s      -> s
   | Unit _        -> "()"
   | Array a       -> let mutable s = "[\n"
-                     Array.map (fun v -> (s <- s + "  " + (prettyPrint v) + ",\n")) a
+                     Array.map (fun v -> (s <- s + "  " + (prettyPrint v) + ",\n")) a |> ignore
                      s + "]"
   | Object p      -> let mutable s = "{\n"
-                     Map.map (fun id v -> (s <- s + "  id: " + (prettyPrint v) + ",\n")) p
+                     Map.map (fun id v -> (s <- s + "  " + id + ": " + (prettyPrint v) + ",\n")) p |> ignore
                      s + "}"
 
 

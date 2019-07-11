@@ -1,12 +1,6 @@
 let i = 1
-let ii :: int = i 
+echo i + i
 
-let f = x :: int -> true
-let b :: () | bool = f(i)
-echo b
-
-type S = "a" | "b" | "c"
-let s1 :: S = "a"
-let s2 :: S = "b"
-let s3 :: S = "c"
-let s4 :: string = s3
+let x = 2
+let xx = int [i, x]
+echo xx
