@@ -4,3 +4,9 @@ echo i + i
 let x = 2
 let xx = int [i, x]
 echo xx
+
+let f = i :: int -> i + 1
+echo f(x)
+
+let ff = i :: int -> i2 :: int -> 1 * i2
+echo ff(i)(x)

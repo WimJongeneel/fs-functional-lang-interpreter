@@ -98,8 +98,7 @@ let rec typeCheckExpression (expr: Expression) (s0: TypeCheckerState): TypeCheck
                                | (IntType _, IntType _)         -> s2, BoolType None
                                | (UnitType _, UnitType _)       -> s2, BoolType None
                                | _                              -> Exception <| sprintf "Type error with '%A' != '%A'" l r |> raise
-  // For now disable lamda typeChecking
-  // | Lambda (p, t, eb)          -> mem, FunctionType (typeToTypeEntry types t, typeCheckFuncBody types mem eb p <| typeToTypeEntry types t)
+  | Lambda (p, t, eb)       -> s0, FunctionType (typeToTypeEntry s0.types t, typeCheckFuncBody s0 eb p <| typeToTypeEntry s0.types t)
   | Apply (e, pe)           -> let s1, funcType = typeCheckExpression e s0  // this needs to updated to resolve the return type based on the generic type arguments
                                let s2, pt = typeCheckExpression pe s1
                                match funcType with
