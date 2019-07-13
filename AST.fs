@@ -48,7 +48,7 @@ and Literal =
 and Type = 
 | NamedType         of string
 | LiteralType       of Literal
-| FuncType          of Type * Type
+| FuncType          of Type * Map<string, Type option> * Type
 | NestedType        of Type
 | ArrayType         of Type
 | ObjectType        of (string * Type) list

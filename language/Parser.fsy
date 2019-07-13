@@ -114,7 +114,7 @@ typing:
   | BOOL                                                  { BoolLiteral $1 |> LiteralType }
   | INT                                                   { IntLiteral $1 |> LiteralType }
   | UNIT                                                  { LiteralType UnitLiteral }
-  | typing ARROW typing                                   { FuncType ($1, $3) }
+  | typing ARROW typing                                   { FuncType ($1, Map.empty, $3) }
   | LPAR typing RPAR                                      { NestedType $2 }
   | typing LSQBR RSQBR                                    { ArrayType $1}
   | LCB type_list RCB                                     { ObjectType $2 }
