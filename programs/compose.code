@@ -1,3 +1,11 @@
-let compose = f -> g -> a -> g(f(a))
-let invert = b -> b != true
-echo compose(invert)(x -> x == true)(false)
+let compose = <a,b,c> f :: (a -> b) -> g :: (b -> c) -> a :: a -> g(f(a))
+let f = i :: int -> i + 1
+let g = i :: int -> i - 1
+echo compose<int, int, int>(f)(g)(1)
+
+let fst = <a> a :: a[] -> a.[0]
+echo fst<string>(string [ "h", "e" ])
+
+let fx = <a> a :: { x: a } -> a.x
+let x :: int = fx<int>({x: 2, y : false})
+echo x

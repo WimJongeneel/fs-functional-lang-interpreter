@@ -122,6 +122,9 @@ let i = addOne<1>(1)
 
 let readId = <a :: {Id: int}> a :: a -> a.Id
 let id = readId<{Id: int, Name: string}>({Id: 1, Name: "Dave"})
+
+let compose = <a,b,c> f :: (a -> b) -> g :: (b -> c) -> a :: a -> g(f(a))
+let fst = <a> a :: a[] -> a.[0]
 ```
 
 ### Unions
