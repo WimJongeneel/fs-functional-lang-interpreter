@@ -17,7 +17,7 @@ and Expression =
 | Read              of id: string
 | Write             of id: string * expr: Expression * _rec: bool * _type: Type option
 | Lambda            of param: string * paramType: Type * generics: Map<string, Type list> * exprs: Expression list
-| Apply             of func: Expression * param: Expression
+| Apply             of func: Expression * typeArguments: Type list * param: Expression
 | Nested            of Expression
 | Echo              of Expression
 | Equals            of left: Expression * rigth: Expression

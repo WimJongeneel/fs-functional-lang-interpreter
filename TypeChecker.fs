@@ -101,7 +101,7 @@ let rec typeCheckExpression (expr: Expression) (s0: TypeCheckerState): TypeCheck
   | Lambda (p, t, gs, eb)   -> let generics = Map.map (fun id r -> GenericType <| List.map (fun r -> typeToTypeEntry s0.types r) r) gs
                                let paramType = typeToTypeEntry s0.types t
                                s0, FunctionType <| (typeToTypeEntry s0.types t, Map.empty, typeCheckFuncBody s0 eb p paramType generics)
-  | Apply (e, pe)           -> let s1, funcType = typeCheckExpression e s0  // this needs to updated to resolve the return type based on the generic type arguments
+  | Apply (e, ga, pe)       -> let s1, funcType = typeCheckExpression e s0  // this needs to updated to resolve the return type based on the generic type arguments
                                let s2, pt = typeCheckExpression pe s1
                                match funcType with
                                | FunctionType (p, _, r) when isAssignable p pt -> s2, r

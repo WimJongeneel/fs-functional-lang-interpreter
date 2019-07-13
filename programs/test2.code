@@ -12,4 +12,7 @@ let ff = <a :: int> i :: int -> {
   let a :: a = 1
   a
 } 
-echo ff
+echo ff<string>(1)
+
+let g = <a, b :: string> i :: int -> i
+echo g<{Id: string}, "hi">(0)
