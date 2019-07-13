@@ -22,10 +22,13 @@ let int = ['-' '+']? ['0'-'9']+
   
 rule tokenstream = 
 parse
+  | "()"          { Parser.UNIT }
   | "type"        { Parser.TYPE_ALIAS }
+  | "<"           { Parser.LAB }
+  | ">"           { Parser.RAB }
   | "::"          { Parser.TYPE }
   | "&&"          { Parser.AND }
-  | "|| "          { Parser.OR }
+  | "|| "         { Parser.OR }
   | "|"           { Parser.PIPE }
   | "open"        { Parser.OPEN }
   | "rec"         { Parser.REC }
@@ -52,7 +55,6 @@ parse
   | "let"         { Parser.LET }
   | "true"        { Parser.BOOL (true) }
   | "false"       { Parser.BOOL (false) }
-  | "()"          { Parser.UNIT }
   | int           { Parser.INT (int (lexeme lexbuf)) }
   | '"'           { read_string "" false lexbuf } 
   | id+           { Parser.ID (lexeme lexbuf) }

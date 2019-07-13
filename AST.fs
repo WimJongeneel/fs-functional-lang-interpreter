@@ -16,8 +16,8 @@ and Expression =
 | Value             of MemoryValue
 | Read              of id: string
 | Write             of id: string * expr: Expression * _rec: bool * _type: Type option
-| Lambda            of param: string * paramType: Type * exprs: Expression list
-| Apply             of func: Expression * param: Expression
+| Lambda            of param: string * paramType: Type * generics: Map<string, Type option> * exprs: Expression list
+| Apply             of func: Expression * typeArguments: Type list * param: Expression
 | Nested            of Expression
 | Echo              of Expression
 | Equals            of left: Expression * rigth: Expression
@@ -48,7 +48,7 @@ and Literal =
 and Type = 
 | NamedType         of string
 | LiteralType       of Literal
-| FuncType          of Type * Type
+| FuncType          of Type * Map<string, Type option> * Type
 | NestedType        of Type
 | ArrayType         of Type
 | ObjectType        of (string * Type) list
@@ -62,3 +62,4 @@ let writeMemory<'m> (mem: Memory<'m>) (id: string) (v: 'm) =
   let scope = mem.Head |> fun scope -> scope.Add (id, v)
   scope :: mem.Tail
 
+let listToMapKeys<'a when 'a : comparison > (list: 'a list): Map<'a, unit> = List.fold (fun (m: Map<'a, unit>) k -> m.Add (k,())) Map.empty list

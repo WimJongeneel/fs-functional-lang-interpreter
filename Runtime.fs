@@ -18,8 +18,8 @@ let rec evalExpression (mem: Memory<MemoryValue>) (expr: Expression) : Memory<Me
                                         | _ -> v1
                                let m2 = writeMemory m1 id v2
                                m2, Unit ()
-  | Lambda (p, _, es)       -> mem, LambdaExpr (mem, es, p, None)
-  | Apply (e, p)            -> match e with
+  | Lambda (p, _, _, es)    -> mem, LambdaExpr (mem, es, p, None)
+  | Apply (e, _, p)         -> match e with
                                | Read i when Functions.ContainsKey i -> let (m1, p1) = evalExpression mem p
                                                                         Functions.[i] mem p1
                                | _ -> let (m1, l) = evalExpression mem e
@@ -159,11 +159,12 @@ and prettyPrint (v: MemoryValue): string =
   | String s      -> s
   | Unit _        -> "()"
   | Array a       -> let mutable s = "[\n"
-                     Array.map (fun v -> (s <- s + "  " + (prettyPrint v) + ",\n")) a
+                     Array.map (fun v -> (s <- s + "  " + (prettyPrint v) + ",\n")) a |> ignore
                      s + "]"
   | Object p      -> let mutable s = "{\n"
-                     Map.map (fun id v -> (s <- s + "  id: " + (prettyPrint v) + ",\n")) p
+                     Map.map (fun id v -> (s <- s + "  " + id + ": " + (prettyPrint v) + ",\n")) p |> ignore
                      s + "}"
+  | _             -> sprintf "%A" v
 
 
 let evalExpressions (exprs: Expression list) = 

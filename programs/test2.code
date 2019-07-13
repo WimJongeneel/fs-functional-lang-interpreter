@@ -1,12 +1,11 @@
-let i = 1
-let ii :: int = i 
+let ff = <a> i :: a -> {
+  i
+}
 
-let f = x :: int -> true
-let b :: () | bool = f(i)
-echo b
+let d = ff<1>(1)
+let x :: int = d
+echo x
 
-type S = "a" | "b" | "c"
-let s1 :: S = "a"
-let s2 :: S = "b"
-let s3 :: S = "c"
-let s4 :: string = s3
+
+let g = <a :: {Id: string}> aa :: a -> aa.Id
+echo g<{Id: string, Name: string}>({Id: "hi", Name: "henk", Age: 32})
