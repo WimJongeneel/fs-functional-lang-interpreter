@@ -1,18 +1,11 @@
-let i = 1
-echo i + i
+let ff = <a> i :: a -> {
+  i
+}
 
-let x = 2
-let xx = int [i, x]
-echo xx
+let d = ff<1>(1)
+let x :: int = d
+echo x
 
-let f = i :: int -> i + 1
-echo f(x)
 
-let ff = <a :: int> i :: int -> {
-  let a :: a = 1
-  a
-} 
-echo ff<1>(1)
-
-let g = <a, b :: string> i :: int -> i
-echo g<{Id: string}, "hi">(0)
+let g = <a :: {Id: string}> aa :: a -> aa.Id
+echo g<{Id: string, Name: string}>({Id: "hi", Name: "henk", Age: 32})

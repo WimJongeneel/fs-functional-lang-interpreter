@@ -21,7 +21,10 @@ type TypeCheckerState = {
 
 let rec typeCheckExpression (expr: Expression) (s0: TypeCheckerState): TypeCheckerState * TypeEntry =
   match expr with
-  | Read id                 -> s0, readMemory s0.vals id
+  | Read id                 -> let t = readMemory s0.vals id
+                               match t with
+                               | GenericType (_, Some r)  -> s0, r
+                               | _                        -> s0, t
   | Write (id, expr, _, t)  -> let s1, t1 = typeCheckExpression expr s0
                                if t.IsNone
                                 then
@@ -99,10 +102,11 @@ let rec typeCheckExpression (expr: Expression) (s0: TypeCheckerState): TypeCheck
                                | (UnitType _, UnitType _)       -> s2, BoolType None
                                | _                              -> Exception <| sprintf "Type error with '%A' != '%A'" l r |> raise
   | Lambda (p, t, gs, eb)   -> let generics = Map.map (fun id r -> GenericType (id, Option.map (typeToTypeEntry s0.types) r)) gs
-                               let paramType = typeToTypeEntry s0.types t
-                               let returnType = typeCheckFuncBody s0 eb p paramType generics
-                               let genericTypeArguments = Map.map (fun _ t -> Option.map (typeToTypeEntry s0.types) t) gs
-                               s0, FunctionType <| (typeToTypeEntry s0.types t, genericTypeArguments , returnType)
+                               let s1 = {s0 with types = generics :: s0.types}
+                               let paramType = typeToTypeEntry s1.types t
+                               let returnType = typeCheckFuncBody s1 eb p paramType generics
+                               let genericTypeArguments = Map.map (fun _ t -> Option.map (typeToTypeEntry s1.types) t) gs
+                               s0, FunctionType <| (typeToTypeEntry s1.types t, genericTypeArguments , returnType)
   | Apply (e, ga, pe)       -> let s1, funcType = typeCheckExpression e s0  // this needs to updated to resolve the return type based on the generic type arguments
                                let expedtedTypeArgs = List.map (typeToTypeEntry s0.types) ga
                                match funcType with
@@ -111,13 +115,22 @@ let rec typeCheckExpression (expr: Expression) (s0: TypeCheckerState): TypeCheck
                                                                                           if tp.IsSome && isAssignable tp.Value expedtedTypeArgs.[i]  |> not
                                                                                           then Exception <| sprintf "Given type '%A' is not assignable to type '%A'" expedtedTypeArgs.[i] tp.Value |> raise
                                                                                           else true)) |> ignore
-                                                             let localTypeScope = Map.map (fun id (r: _ option) -> if r.IsSome then r.Value else GenericType (id, None)) eg
+                                                             let localTypeScope =  Map.toList eg 
+                                                                                    |> List.mapi (fun i t -> let id, tt = t in (id, ga.[i])) 
+                                                                                    |> Map.ofList
+                                                                                    |> Map.map (fun _ t -> typeToTypeEntry s1.types t)
                                                              let s2 = { s1 with types = localTypeScope :: s0.types } 
-                                                             let s3, pt = typeCheckExpression pe s2
+                                                             let s3, providedParamType = typeCheckExpression pe s2
+                                                             let expectedParamType = match p with 
+                                                                                     | GenericType (id, _) -> readMemory s3.types id
+                                                                                     | _                   -> p
+                                                             let returnType = match r with
+                                                                              | GenericType (id, _) -> readMemory s3.types id
+                                                                              | _                   -> r
                                                              let s4 = { s3 with types = s3.types.Tail }
-                                                             if isAssignable p pt 
-                                                              then s4, r 
-                                                              else Exception <| sprintf "Given value '%A' is not assignable to param '%A'" pt p |> raise
+                                                             if isAssignable expectedParamType providedParamType 
+                                                              then s4, returnType
+                                                              else Exception <| sprintf "Given value '%A' is not assignable to param '%A'" providedParamType expectedParamType |> raise
                                 | _                      -> Exception <| sprintf "No not callable:  '%A'" e |> raise
   | ArrayInit (i, t)        -> let t1 = typeToTypeEntry s0.types t
                                List.map (fun e -> (let _, t2 = typeCheckExpression e s0;
@@ -167,9 +180,9 @@ and isAssignable (expected: TypeEntry) (given: TypeEntry) =
   | (_, UnionType cs2)                                        -> List.forall (fun c2 -> isAssignable expected c2) cs2
   | (UnionType cs, _)                                         -> List.exists (fun c -> isAssignable c given) cs
   | (GenericType (_, r1), _)                                  -> let io = Option.map (fun c -> isAssignable c given) r1
-                                                                 if io.IsSome && io.Value = false then false else true
+                                                                 if io.IsSome && io.Value = true then true else false
   | (_, GenericType (_, r2))                                  -> let io = Option.map (fun c -> isAssignable c given) r2
-                                                                 if io.IsSome && io.Value = false then false else true
+                                                                 if io.IsSome && io.Value = true then true else false
   | _                                                         -> false
 
 and narrowIfScope (s0: TypeCheckerState) (pred: Expression) : Memory<TypeEntry> =
