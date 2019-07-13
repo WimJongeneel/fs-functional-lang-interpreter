@@ -103,10 +103,10 @@ lambda:
   | LAB id_list RAB ID TYPE typing ARROW expression0      { Lambda ($4, $6, $2, [$8])}
 
 id_list:
-  | ID TYPE typing                                        { Map.ofList [($1, [$3])] }
-  | ID                                                    { Map.ofList [($1, [])] }
-  | ID TYPE typing COMMA id_list                          { $5.Add ($1, [$3])}
-  | ID COMMA id_list                                      { $3.Add ($1, [])}
+  | ID TYPE typing                                        { Map.ofList [($1, Some $3)] }
+  | ID                                                    { Map.ofList [($1, None)] }
+  | ID TYPE typing COMMA id_list                          { $5.Add ($1, Some $3)}
+  | ID COMMA id_list                                      { $3.Add ($1, None)}
 
 typing: 
   | ID                                                    { NamedType $1 }

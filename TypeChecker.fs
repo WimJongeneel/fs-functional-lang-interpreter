@@ -8,11 +8,11 @@ type TypeEntry =
   | IntType       of int option
   | BoolType      of bool option
   | StringType    of string option
-  | FunctionType  of param: TypeEntry * generics: Map<string, (* restrictions *) List<TypeEntry>> * ret: TypeEntry
+  | FunctionType  of param: TypeEntry * generics: Map<string, (* restriction *) TypeEntry option> * ret: TypeEntry
   | ArrayType     of TypeEntry
   | ObjectType    of Map<string, TypeEntry>
   | UnionType     of TypeEntry list
-  | GenericType   of restrictions: List<TypeEntry>
+  | GenericType   of id: string * restriction: TypeEntry option
 
 type TypeCheckerState = {
   vals: Memory<TypeEntry>
@@ -98,7 +98,7 @@ let rec typeCheckExpression (expr: Expression) (s0: TypeCheckerState): TypeCheck
                                | (IntType _, IntType _)         -> s2, BoolType None
                                | (UnitType _, UnitType _)       -> s2, BoolType None
                                | _                              -> Exception <| sprintf "Type error with '%A' != '%A'" l r |> raise
-  | Lambda (p, t, gs, eb)   -> let generics = Map.map (fun id r -> GenericType <| List.map (fun r -> typeToTypeEntry s0.types r) r) gs
+  | Lambda (p, t, gs, eb)   -> let generics = Map.map (fun id r -> GenericType (id, Option.map (typeToTypeEntry s0.types) r)) gs
                                let paramType = typeToTypeEntry s0.types t
                                s0, FunctionType <| (typeToTypeEntry s0.types t, Map.empty, typeCheckFuncBody s0 eb p paramType generics)
   | Apply (e, ga, pe)       -> let s1, funcType = typeCheckExpression e s0  // this needs to updated to resolve the return type based on the generic type arguments
@@ -154,8 +154,10 @@ and isAssignable (expected: TypeEntry) (given: TypeEntry) =
                                                                  unmatched.IsNone
   | (_, UnionType cs2)                                        -> List.forall (fun c2 -> isAssignable expected c2) cs2
   | (UnionType cs, _)                                         -> List.exists (fun c -> isAssignable c given) cs
-  | (GenericType r1, _)                                       -> r1.IsEmpty = false && List.forall (fun c -> isAssignable c given) r1
-  | (_, GenericType r2)                                       -> r2.IsEmpty = false && List.forall (fun c -> isAssignable expected c) r2
+  | (GenericType (_, r1), _)                                  -> let io = Option.map (fun c -> isAssignable c given) r1
+                                                                 if io.IsSome && io.Value = false then false else true
+  | (_, GenericType (_, r2))                                  -> let io = Option.map (fun c -> isAssignable c given)r2
+                                                                 if io.IsSome && io.Value = false then false else true
   | _                                                         -> false
 
 and narrowIfScope (s0: TypeCheckerState) (pred: Expression) : Memory<TypeEntry> =
