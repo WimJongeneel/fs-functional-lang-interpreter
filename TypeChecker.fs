@@ -40,7 +40,6 @@ let rec typeCheckExpression (expr: Expression) (s0: TypeCheckerState): TypeCheck
                                     | Int i     -> Some i |> IntType
                                     | Bool b    -> Some b |> BoolType
                                     | String s  -> Some s |> StringType
-                                    | Unit _    -> UnitType
                                     | _         -> UnitType
   | Plus (l, r)             -> let s1, l1 = typeCheckExpression l s0
                                let s2, r1 = typeCheckExpression r s1
@@ -63,8 +62,8 @@ let rec typeCheckExpression (expr: Expression) (s0: TypeCheckerState): TypeCheck
                                match (l1, r1) with
                                | (IntType _, IntType _)         -> s2, IntType None
                                | _                              -> Exception "type error with Divide" |> raise
-  | Echo e                  -> let m1, _ = typeCheckExpression e s0
-                               m1, UnitType
+  | Echo e                  -> let s1, _ = typeCheckExpression e s0
+                               s1, UnitType
   | And (l, r)              -> let s1, l1 = typeCheckExpression l s0
                                let s2, r1 = typeCheckExpression r s1
                                match (l1, r1) with
@@ -107,7 +106,7 @@ let rec typeCheckExpression (expr: Expression) (s0: TypeCheckerState): TypeCheck
                                let returnType = typeCheckFuncBody s1 eb p paramType generics
                                let genericTypeArguments = Map.map (fun _ t -> Option.map (typeToTypeEntry s1.types) t) gs
                                s0, FunctionType <| (typeToTypeEntry s1.types t, genericTypeArguments , returnType)
-  | Apply (e, ga, pe)       -> let s1, funcType = typeCheckExpression e s0  // this needs to updated to resolve the return type based on the generic type arguments
+  | Apply (e, ga, pe)       -> let s1, funcType = typeCheckExpression e s0
                                let expedtedTypeArgs = List.map (typeToTypeEntry s0.types) ga
                                match funcType with
                                 | FunctionType (p, eg, r) -> Map.toList eg 
@@ -116,7 +115,7 @@ let rec typeCheckExpression (expr: Expression) (s0: TypeCheckerState): TypeCheck
                                                                                           then Exception <| sprintf "Given type '%A' is not assignable to type '%A'" expedtedTypeArgs.[i] tp.Value |> raise
                                                                                           else true)) |> ignore
                                                              let localTypeScope =  Map.toList eg 
-                                                                                    |> List.mapi (fun i t -> let id, tt = t in (id, ga.[i])) 
+                                                                                    |> List.mapi (fun i t -> let id, _ = t in (id, ga.[i])) 
                                                                                     |> Map.ofList
                                                                                     |> Map.map (fun _ t -> typeToTypeEntry s1.types t)
                                                              let s2 = { s1 with types = localTypeScope :: s0.types } 
@@ -169,7 +168,7 @@ and isAssignable (expected: TypeEntry) (given: TypeEntry) =
   | (BoolType b1, BoolType b2) when b1.IsSome && b2.IsSome     -> b1.Value = b2.Value
   | (BoolType b1, BoolType _) when b1.IsNone                  -> true
   | (UnitType, UnitType)                                      -> true
-  | (FunctionType (p1, _, r1), FunctionType(p2, _, r2))       -> isAssignable p2 p1 && isAssignable r1 r2
+  | (FunctionType (p1, _, r1), FunctionType (p2, _, r2))      -> isAssignable p2 p1 && isAssignable r1 r2
   | (ArrayType t1, ArrayType t2)                              -> isAssignable t1 t2
   | (ObjectType o1, ObjectType o2)                            -> let unmatched = Map.tryPick (fun id t1 -> (
                                                                                                 if o2.ContainsKey id && isAssignable t1 o2.[id]
