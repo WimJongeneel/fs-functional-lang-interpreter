@@ -103,26 +103,22 @@ let rec typeCheckExpression (expr: Expression) (s0: TypeCheckerState): TypeCheck
                                let returnType = typeCheckFuncBody s0 eb p paramType generics
                                let genericTypeArguments = Map.map (fun _ t -> Option.map (typeToTypeEntry s0.types) t) gs
                                s0, FunctionType <| (typeToTypeEntry s0.types t, genericTypeArguments , returnType)
-  | Apply (e, ga, pe)       -> // turn ga in to map<string, typeentry>
-                              // check if type args are assigable
-                              // check function params with generic typescope
-                              // get return type
-                              // resolve return type if generictype
-                               let s1, funcType = typeCheckExpression e s0  // this needs to updated to resolve the return type based on the generic type arguments
+  | Apply (e, ga, pe)       -> let s1, funcType = typeCheckExpression e s0  // this needs to updated to resolve the return type based on the generic type arguments
                                let expedtedTypeArgs = List.map (typeToTypeEntry s0.types) ga
                                match funcType with
-                               | FunctionType (p, eg, r) -> Map.toList eg 
-                                                           |> List.mapi (fun i tpo -> (let _, tp = tpo;
-                                                                                      if tp.IsSome && isAssignable tp.Value expedtedTypeArgs.[i]  |> not
-                                                                                      then Exception <| sprintf "Given type '%A' is not assignable to type '%A'" expedtedTypeArgs.[i] tp.Value |> raise
-                                                                                      else true))
-                                                           |> ignore
-
-                               let s2, pt = typeCheckExpression pe s1
-                               match funcType with
-                               | FunctionType (p, _, r) when isAssignable p pt -> s2, r
-                               | FunctionType (p, _, _)                        -> Exception <| sprintf "Given value '%A' is not assignable to param '%A'" pt p |> raise
-                               | _                                             -> Exception <| sprintf "No not callable:  '%A'" e |> raise
+                                | FunctionType (p, eg, r) -> Map.toList eg 
+                                                              |> List.mapi (fun i tpo -> (let _, tp = tpo;
+                                                                                          if tp.IsSome && isAssignable tp.Value expedtedTypeArgs.[i]  |> not
+                                                                                          then Exception <| sprintf "Given type '%A' is not assignable to type '%A'" expedtedTypeArgs.[i] tp.Value |> raise
+                                                                                          else true)) |> ignore
+                                                             let localTypeScope = Map.map (fun id (r: _ option) -> if r.IsSome then r.Value else GenericType (id, None)) eg
+                                                             let s2 = { s1 with types = localTypeScope :: s0.types } 
+                                                             let s3, pt = typeCheckExpression pe s2
+                                                             let s4 = { s3 with types = s3.types.Tail }
+                                                             if isAssignable p pt 
+                                                              then s4, r 
+                                                              else Exception <| sprintf "Given value '%A' is not assignable to param '%A'" pt p |> raise
+                                | _                      -> Exception <| sprintf "No not callable:  '%A'" e |> raise
   | ArrayInit (i, t)        -> let t1 = typeToTypeEntry s0.types t
                                List.map (fun e -> (let _, t2 = typeCheckExpression e s0;
                                                   if isAssignable t1 t2 |> not
