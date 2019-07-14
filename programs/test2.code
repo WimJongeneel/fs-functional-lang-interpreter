@@ -1,11 +1,7 @@
-let ff = <a> i :: a -> {
-  i
+type option = <a> { kind: "some", value: a}
+
+let some = <a> a :: a -> {
+  {kind: "some", value: a}
 }
 
-let d = ff<1>(1)
-let x :: int = d
-echo x
-
-
-let g = <a :: {Id: string}> aa :: a -> aa.Id
-echo g<{Id: string, Name: string}>({Id: "hi", Name: "henk", Age: 32})
+let s = some<int>(1)
