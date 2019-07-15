@@ -1,7 +1,11 @@
-type option = <a> { kind: "some", value: a}
+let x = 1
 
-let some = <a> a :: a -> {
-  {kind: "some", value: a}
-}
+type data <a> = { value: a }
 
-let s = some<int>(1)
+let x :: data<<int>> = { value: 1 }
+
+let f = <a, b>x :: int -> x
+
+type x <a, b, c> = (a -> b) -> (b -> c) -> a -> c
+
+let c = <a, b, c> a :: (a -> b) -> g :: (b -> c) -> a :: a -> g<b, c>(f<a, b>(a))

@@ -3,6 +3,7 @@
 * [ ] Type checking for build-in functions
 * [ ] Type aliases in REPL
 * [ ] Resolve union types to the smallest common base type before using it to typecheck expresion
+* [ ] Parsing for higher-order-functions is broken
 
 ## Typesystem
 
