@@ -2,6 +2,7 @@
 
 * [ ] Type checking for build-in functions
 * [ ] Type aliases in REPL
+* [ ] Resolve union types to the smallest common base type before using it to typecheck expresion
 
 ## Typesystem
 
@@ -84,28 +85,28 @@ let o3 :: { x: 1, y: int } = { o2 with y: 7 }
 
 ### Lambda
 
-Lambda's are created with the `->`. When creating a lambda you always have to specify the type of the argument (`[PARAM] :: [TYPE] -> [EXPRESSION]`). There type is written with `[TYPE] -> [TYPE]`.
+Lambda's are created with the `->`. When creating a lambda you always have to specify the type of the argument (`([PARAM] :: [TYPE]) -> [EXPRESSION]`). There type is written with `[TYPE] -> [TYPE]`.
 
 ```hs
-let f :: int -> int = x :: int -> x + 1
+let f :: int -> int = (x :: int) -> x + 1
 ```
 
 a lambda can return an other lambda. This means that multiple arguments and curring are supported.
 
 ```hs
-let add :: int -> int -> int = x :: int -> y :: int -> x + y
+let add :: int -> int -> int = (x :: int) -> (y :: int) -> x + y
 ```
 
-You can also pass a lambda as an argument to another lambda. For this you need `()` in the argument type:
+You can also pass a lambda as an argument to another lambda.
 
 ```hs
-let f :: (int -> int) -> int = g :: (int -> int) -> g(1)
+let f :: (int -> int) -> int = (g :: int -> int) -> g(1)
 ```
 
 Lambda's can have function body when using `{}`. The last expression is the return value. Lambda's get lexial scoping.
 
 ```hs
-let f :: int -> int = x :: int -> {
+let f :: int -> int = (x :: int) -> {
   echo x
   x + 1
 }
@@ -114,16 +115,16 @@ let f :: int -> int = x :: int -> {
 Lamdas also accept generic type arguments. When returning a value of a generic type the compiler will resolve the concrete provided type in de function call. Multiple typearguments are seperated with ','. Type constrains are indicated with `:: TYPE`.
 
 ```hs
-let id = <a> a :: a -> a
+let id = <a> (a :: a) -> a
 let x = id<1>(1)
 
-let addOne = <a :: int> = i :: a -> i + 1
+let addOne = <a :: int> = (i :: a) -> i + 1
 let i = addOne<1>(1)
 
-let readId = <a :: {Id: int}> a :: a -> a.Id
+let readId = <a :: {Id: int}> (a :: a) -> a.Id
 let id = readId<{Id: int, Name: string}>({Id: 1, Name: "Dave"})
 
-let compose = <a,b,c> f :: (a -> b) -> g :: (b -> c) -> a :: a -> g(f(a))
+let compose = <a,b,c> (f :: a -> b) -> (g :: b -> c) -> (a :: a) -> g(f(a))
 let fst = <a> a :: a[] -> a.[0]
 ```
 
@@ -144,7 +145,7 @@ Types can be given aliases to avoid repetition and extremely long expressions. T
 ```hs
 type String = string
 type compose = (int -> int) -> (int -> int) -> int -> int
-let compose :: compose = f :: (int -> int) -> g :: (int -> int) -> x -> g(f(x))
+let compose :: compose = (f :: int -> int) -> (g :: int -> int) -> x -> g(f(x))
 
 type user = {
   id: int,
@@ -155,6 +156,14 @@ let user :: user = {
   id: 1,
   username: "Dave"
 }
+```
+
+Types can also take type arguments. They are listed before the `=`. When using the type the arguments are listed within `<<` and `>>`.
+
+```hs
+type data<a> = { value: a }
+let d :: data<<string>> = { value: "hi" }
+let f = <a> (d :: data<<a>>) -> d.value
 ```
 
 ### Notes on literals

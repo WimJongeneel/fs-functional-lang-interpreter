@@ -1,11 +1,17 @@
-let ff = <a> i :: a -> {
-  i
-}
+let x = 1
 
-let d = ff<1>(1)
-let x :: int = d
-echo x
+type data <a> = { value: a }
 
+let d :: data<<string>> = { value: "hi" }
 
-let g = <a :: {Id: string}> aa :: a -> aa.Id
-echo g<{Id: string, Name: string}>({Id: "hi", Name: "henk", Age: 32})
+let df = <a>(d :: data<<a>>) -> d.value
+
+echo df<string>(d)
+
+let f = <a>(x :: int) -> x
+
+let compose = <a, b, c>(f :: a -> b) -> (g :: b -> c) -> (a :: a) -> g(f(a))
+
+let add1 = (i :: int) -> i + 1
+let times2 = (i :: int) -> i * 2
+echo compose<int, int, int>(add1)(times2)(1)
