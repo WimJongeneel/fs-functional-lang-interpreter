@@ -97,10 +97,10 @@ prop_list:
   | ID COLON expression1 COMMA prop_list                          { ($1, $3) :: $5 }
 
 lambda:
-  | ID TYPE typing ARROW LCB program RCB                          { Lambda ($1, $3, Map.empty, $6)}
-  | LAB type_arg_list RAB ID TYPE typing ARROW LCB program RCB    { Lambda ($4, $6, $2, $9)}
-  | ID TYPE typing ARROW expression                               { Lambda ($1, $3, Map.empty, [$5])}
-  | LAB type_arg_list RAB ID TYPE typing ARROW expression0        { Lambda ($4, $6, $2, [$8])}
+  | LPAR ID TYPE typing RPAR ARROW LCB program RCB                          { Lambda ($2, $4, Map.empty, $8)}
+  | LAB type_arg_list RAB LPAR ID TYPE typing RPAR ARROW LCB program RCB    { Lambda ($5, $7, $2, $11)}
+  | LPAR ID TYPE typing RPAR ARROW expression                               { Lambda ($2, $4, Map.empty, [$7])}
+  | LAB type_arg_list RAB LPAR ID TYPE typing RPAR ARROW expression0        { Lambda ($5, $7, $2, [$10])}
 
 type_arg_list:
   | ID TYPE typing                                                { Map.ofList [($1, Some $3)] }

@@ -2,10 +2,16 @@ let x = 1
 
 type data <a> = { value: a }
 
-let x :: data<<int>> = { value: 1 }
+let d :: data<<string>> = { value: "hi" }
 
-let f = <a, b>x :: int -> x
+let df = <a>(d :: data<<a>>) -> d.value
 
-type x <a, b, c> = (a -> b) -> (b -> c) -> a -> c
+echo df<string>(d)
 
-let c = <a, b, c> a :: (a -> b) -> g :: (b -> c) -> a :: a -> g<b, c>(f<a, b>(a))
+let f = <a>(x :: int) -> x
+
+let compose = <a, b, c>(f :: a -> b) -> (g :: b -> c) -> (a :: a) -> g(f(a))
+
+let add1 = (i :: int) -> i + 1
+let times2 = (i :: int) -> i * 2
+echo compose<int, int, int>(add1)(times2)(1)
