@@ -16,6 +16,7 @@ let main argv =
 
     let lexbuf = LexBuffer<char>.FromString code
     let ast: Expression list = Parser.start Lexer.tokenstream lexbuf
+    printfn "%A" ast
     evalExpressions ast
 
 

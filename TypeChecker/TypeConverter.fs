@@ -33,3 +33,4 @@ let rec typeToTypeEntry (types: Memory<TypeEntry>) (t: Type): TypeEntry =
                                                                                     |> Map.map (fun _ t -> typeToTypeEntry types t)
                                                                  resolveGenerics i <| localTypeScope :: types
                                      | _                     -> Exception <| sprintf "'%A' is not an ArgumentedType" inner |> raise
+  | Type.ConditionalType (i, e, t, f) -> let c = typeToTypeEntry types in ConditionalType (c i, c e, c t, c f)

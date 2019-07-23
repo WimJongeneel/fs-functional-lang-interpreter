@@ -13,4 +13,5 @@ let rec resolveGenerics (t: TypeEntry) (types: Memory<TypeEntry>): TypeEntry =
   | TypeEntry.ArgumentedType (a, i) -> match i with 
                                        | FunctionType (p, g, r) -> FunctionType (resolveGenerics p types, a, resolveGenerics r types)
                                        | _                      -> t
+  | TypeEntry.ConditionalType (i, e, t, f) -> TypeEntry.ConditionalType (resolveGenerics i types, resolveGenerics e types, resolveGenerics t types, resolveGenerics f types)
   | _                               -> t

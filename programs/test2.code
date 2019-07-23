@@ -1,3 +1,4 @@
+
 let x = 1
 
 type data <a> = { value: a }
@@ -17,6 +18,8 @@ let add1 = (i :: int) -> i + 1
 let times2 = (i :: int) -> i * 2
 echo compose<int, int, int>(add1)(times2)(1)
 
+type c = 1 extends int ? true : false
 
 type f <a> = a -> int
 let f :: f = <a>(a :: a) -> 1
+

@@ -32,4 +32,5 @@ let rec isAssignable (expected: TypeEntry) (given: TypeEntry) =
   | (ArgumentedType (a1, i1), FunctionType (p, g, r))         -> match i1 with
                                                                  | FunctionType (ip, _, ir) -> g.Count = a1.Count && isAssignable p ip && isAssignable ir r
                                                                  | _                         -> false
+  | (ConditionalType (i, e, t, f), _)                         -> if isAssignable e i then isAssignable t given else isAssignable f given
   | _                                                         -> false

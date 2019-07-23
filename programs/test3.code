@@ -1,0 +1,19 @@
+
+let x = 1
+
+let f :: int -> int = (i :: int) -> 1
+
+type f = int -> int
+type c = 1 extends int ? true : false
+
+let ff :: f = (i :: int) -> i * i
+
+echo f(1)
+
+let c :: c = true
+
+type cc <a> = a extends { Id: int } ? 1 : 2
+let cc :: cc<<{ Id : int }>> = 1
+
+let f = <a>(a :: a extends string ? "hi" : int) -> a
+echo f<string>("hi")

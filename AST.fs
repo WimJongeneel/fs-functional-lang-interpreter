@@ -55,6 +55,7 @@ and Type =
 | UnionType         of Type list
 | ArgumentedType    of args: Map<string, Type option> * inner: Type
 | AppliedType       of args: Type list * name: string
+| ConditionalType   of input: Type * extends: Type * iftrue: Type * iffalse: Type
 
 let readMemory<'m> (mem: Memory<'m>) (id: string) =
   List.tryPick (fun scope -> if Map.containsKey id scope then scope.[id] |> Some else None) mem

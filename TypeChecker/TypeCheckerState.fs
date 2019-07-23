@@ -13,6 +13,7 @@ type TypeEntry =
   | UnionType       of TypeEntry list
   | GenericType     of id: string * restriction: TypeEntry option
   | ArgumentedType  of args: Map<string, TypeEntry option> * inner: TypeEntry
+  | ConditionalType of input: TypeEntry * extends: TypeEntry * iftrue: TypeEntry * iffalse: TypeEntry
 
 type TypeCheckerState = {
   vals: Memory<TypeEntry>

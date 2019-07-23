@@ -113,7 +113,7 @@ let rec typeCheckExpression (expr: Expression) (s0: TypeCheckerState): TypeCheck
                                                              let s4 = { s3 with types = s3.types.Tail }
                                                              if isAssignable expectedParamType providedParamType
                                                               then s4, returnType
-                                                              else Exception <| sprintf "fsdgGiven value '%A' is not assignable to param '%A'" providedParamType expectedParamType |> raise
+                                                              else Exception <| sprintf "Given value '%A' is not assignable to param '%A'" providedParamType expectedParamType |> raise
                                 | _                      -> Exception <| sprintf "No not callable:  '%A'" e |> raise
   | ArrayInit (i, t)        -> let t1 = typeToTypeEntry s0.types t
                                List.map (fun e -> (let _, t2 = typeCheckExpression e s0;
