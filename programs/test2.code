@@ -10,8 +10,13 @@ echo df<string>(d)
 
 let f = <a>(x :: int) -> x
 
-let compose = <a, b, c>(f :: a -> b) -> (g :: b -> c) -> (a :: a) -> g(f(a))
+type compose <a, b, c> = (a -> b) -> (b -> c) -> a -> c
+let compose :: compose = <a, b, c>(f :: a -> b) -> (g :: b -> c) -> (a :: a) -> g(f(a))
 
 let add1 = (i :: int) -> i + 1
 let times2 = (i :: int) -> i * 2
 echo compose<int, int, int>(add1)(times2)(1)
+
+
+type f <a> = a -> int
+let f :: f = <a>(a :: a) -> 1

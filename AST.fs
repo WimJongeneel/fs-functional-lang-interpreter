@@ -60,6 +60,9 @@ let readMemory<'m> (mem: Memory<'m>) (id: string) =
   List.tryPick (fun scope -> if Map.containsKey id scope then scope.[id] |> Some else None) mem
   |> fun v -> if v.IsSome then v.Value else Exception <| "Variable not defined: " + id |> raise
 
+let tryReadMemory<'m> (mem: Memory<'m>) (id: string) =
+  List.tryPick (fun scope -> if Map.containsKey id scope then scope.[id] |> Some else None) mem
+
 let writeMemory<'m> (mem: Memory<'m>) (id: string) (v: 'm) =
   let scope = mem.Head |> fun scope -> scope.Add (id, v)
   scope :: mem.Tail

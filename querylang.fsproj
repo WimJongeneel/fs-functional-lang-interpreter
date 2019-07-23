@@ -23,6 +23,7 @@
 
     <Compile Include="./TypeChecker/TypeCheckerState.fs" />
     <Compile Include="./TypeChecker/GenericTypes.fs" />
+    <Compile Include="./TypeChecker/TypeAssignability.fs" />
     <Compile Include="./TypeChecker/TypeConverter.fs" />
     <Compile Include="./TypeChecker/TypeChecker.fs" />
     
