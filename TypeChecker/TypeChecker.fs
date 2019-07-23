@@ -2,23 +2,9 @@ module TypeChecker
 
 open System
 open AST
-
-type TypeEntry =
-  | UnitType
-  | IntType         of int option
-  | BoolType        of bool option
-  | StringType      of string option
-  | FunctionType    of param: TypeEntry * generics: Map<string, (* restriction *) TypeEntry option> * ret: TypeEntry
-  | ArrayType       of TypeEntry
-  | ObjectType      of Map<string, TypeEntry>
-  | UnionType       of TypeEntry list
-  | GenericType     of id: string * restriction: TypeEntry option
-  | ArgumentedType  of args: Map<string, TypeEntry option> * inner: TypeEntry
-
-type TypeCheckerState = {
-  vals: Memory<TypeEntry>
-  types: Memory<TypeEntry>
-}
+open TypeCheckerState
+open TypeConverter
+open GenericTypes
 
 let rec typeCheckExpression (expr: Expression) (s0: TypeCheckerState): TypeCheckerState * TypeEntry =
   match expr with
@@ -157,15 +143,6 @@ let rec typeCheckExpression (expr: Expression) (s0: TypeCheckerState): TypeCheck
   | TypeAlias _             -> s0, UnitType
   | _                       -> Exception <| sprintf "No type for %A" expr |> raise
 
-and resolveGenerics (t: TypeEntry) (types: Memory<TypeEntry>): TypeEntry = 
-  match t with 
-  | GenericType (id, _)         -> readMemory types id
-  | FunctionType (p, g, r)      -> FunctionType (resolveGenerics p types, g, resolveGenerics r types)
-  | ArrayType i                 -> ArrayType <| resolveGenerics i types
-  | ObjectType o                -> ObjectType <| Map.map (fun _ t -> resolveGenerics t types) o
-  | UnionType es                -> UnionType <| List.map (fun t -> resolveGenerics t types) es
-  | _                           -> t
-
 and isAssignable (expected: TypeEntry) (given: TypeEntry) =
   match (expected, given) with
   | (StringType s1, StringType s2) when s1.IsSome && s2.IsSome -> s1.Value = s2.Value
@@ -205,35 +182,6 @@ and narrowIfScope (s0: TypeCheckerState) (pred: Expression) : Memory<TypeEntry> 
                      narrowIfScope { s0 with vals = vals1 } r
   | Nested e      -> narrowIfScope s0 e
   | _             -> s0.vals
-
-and typeToTypeEntry (types: Memory<TypeEntry>) (t: Type): TypeEntry =
-  match t with
-  | LiteralType lt               -> match lt with
-                                    | StringLiteral s -> StringType  <| Some s
-                                    | IntLiteral i    -> IntType     <| Some i
-                                    | BoolLiteral b   -> BoolType    <| Some b
-                                    | UnitLiteral     -> UnitType
-  | NamedType nt                 -> match nt with
-                                    | "string"        -> StringType None
-                                    | "int"           -> IntType None
-                                    | "bool"          -> BoolType None
-                                    | _               -> readMemory types nt
-  | FuncType (p, g, r)           -> FunctionType (typeToTypeEntry types p, Map.map (fun _ t -> Option.map (typeToTypeEntry types) t) g, typeToTypeEntry types r)
-  | NestedType t                 -> typeToTypeEntry types t
-  | Type.ArrayType t             -> ArrayType <| typeToTypeEntry types t
-  | Type.ObjectType p            -> Map.map (fun _ t -> typeToTypeEntry types t) <| Map.ofList p |> ObjectType
-  | Type.UnionType cs            -> List.map (fun c -> typeToTypeEntry types c) cs |> UnionType
-  | Type.ArgumentedType (a, i)   -> let typeArguments = Map.map (fun _ t -> Option.map (typeToTypeEntry types) t) a
-                                    let localTypeScope = Map.map (fun id r -> GenericType (id, Option.map (typeToTypeEntry types) r)) a
-                                    ArgumentedType (typeArguments, typeToTypeEntry <| localTypeScope :: types  <| i)
-  | Type.AppliedType (pa, n)      -> let inner = readMemory types n
-                                     match inner with 
-                                     | ArgumentedType (ea, i) -> let localTypeScope = Map.toList ea
-                                                                                    |> List.mapi (fun i t -> let id, _ = t in (id, pa.[i]))
-                                                                                    |> Map.ofList
-                                                                                    |> Map.map (fun _ t -> typeToTypeEntry types t)
-                                                                 resolveGenerics i <| localTypeScope :: types
-                                     | _                     -> Exception <| sprintf "'%A' is not an ArgumentedType" inner |> raise
 
 and typeCheckFuncBody (s0: TypeCheckerState) (exprs: Expression list) (paramAlias: string) (param: TypeEntry) (generics: Map<string,TypeEntry>): TypeEntry =
   let mutable m1: Memory<TypeEntry> = Map.empty :: s0.vals

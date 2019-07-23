@@ -20,7 +20,12 @@
     <Compile Include="Parser.fs" />
     <Compile Include="Lexer.fs" />
     <Compile Include="RuntimeFunctions.fs" />
-    <Compile Include="TypeChecker.fs" />
+
+    <Compile Include="./TypeChecker/TypeCheckerState.fs" />
+    <Compile Include="./TypeChecker/GenericTypes.fs" />
+    <Compile Include="./TypeChecker/TypeConverter.fs" />
+    <Compile Include="./TypeChecker/TypeChecker.fs" />
+    
     <Compile Include="Runtime.fs" />
     <Compile Include="InteractiveRuntime.fs" />
     <Compile Include="Program.fs" />

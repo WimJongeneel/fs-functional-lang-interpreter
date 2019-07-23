@@ -1,7 +1,7 @@
 let compose = <a,b,c> (f :: a -> b) -> (g :: b -> c) -> (a :: a) -> g(f(a))
-let f = (i :: int) -> i + 1
-let g = (i :: int) -> i - 1
-echo compose<int, int, int>(f)(g)(1)
+let add1 = (i :: int) -> i + 1
+let times2 = (i :: int) -> i * 2
+echo compose<int, int, int>(add1)(times2)(1)
 
 let fst = <a> (a :: a[]) -> a.[0]
 echo fst<string>(string [ "h", "e" ])
